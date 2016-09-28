@@ -59,7 +59,7 @@ spk_list = getSpikeList()
 
 objref mygraph
 mygraph = new Graph(0)
-mygraph.view(0, 0, tstop, py.ncells, 4, 295, 339.84, 200)
+mygraph.view(0, 0, tstop, py.ncells, 4, 295, 340, 200)
 //run()
 showRasterPlot(mygraph, spk_list)
 
