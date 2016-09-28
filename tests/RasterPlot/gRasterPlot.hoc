@@ -11,60 +11,56 @@ objref py
 py = new PythonObject() /* to access Python objects */
 
 //=========================================================================
-// makestveclist()
-// This function copies the spikes times from the objects in the
-// Python list (cell_list) to hoc Vectors.
-//=========================================================================
-
-//=========================================================================
-// prepareRasterPlot(): 
+// getSpikeList()
 //
-// 1.- for each neuron create a new hoc vector 
-// 2.- uses record() of a NetCon class to record the spike time
-//========================================================================
-objref netcon, vec
-objref spk_times  /* hoc Vector to store spike times */
-objref nil        /* dummy variable              */
-objref gRaster    /* rater plot graphic object   */
+// Copies the spk_times (hoc Vector) from the the Python lists (cell_list)
+// and returns it as a hoc List.
+//=========================================================================
 
-proc prepareRasterPlot() {
+obfunc getSpikeList(){local i localobj spk_list, spk_times
 
-    spk_times = new List()
-
-    print(py.ncells)
-    for i = 0, py.ncells-1 {
-        vec = new Vector() /* create a new hoc vector */
-        netcon = new NetCon(py.cell_list[i].soma(0.5)._ref_v, nil, 0, 0, 0)
-        netcon.record(vec) /* Records the event times with a netcon */
-        spk_times.append(vec)
+    spk_list = new List() /* a List to collect all spikes */
+    for i = 0, py.ncells - 1 {
+        spk_times = new Vector() /* to collect spk_times from py obj */
+        spk_times.from_python( py.cell_list[i].spk_times )
+        // print i // verify that the data were copied
+        // spk_times.printf()
+        spk_list.append( spk_times )
     }
-    objref netcon, vec /* de-referencing */
-    
-    gRaster = new Graph(0) /* raster plot */
-    /* last four params of gRaster.view are left, top, widht and heigth*/
-    gRaster.view(0, 0, tstop, py.ncells, 4, 295, 339.84, 200) 
-
+    return spk_list
 }
 
 //=========================================================================
 // showRasterPlot()
 //
-// we plot a sequence of | whose xcoor are the times at which cell fires
+// Arguments:
+// $o1 is the Graph object that will get the plot
+// $o2 hoc List with spk_time vectors (obtained getSpikeList)
+// 
+// will plot a sequence of | whose xcoor are the times at which cell fires
 //=========================================================================
-objref spk /* a vector whose length is the number of spikes */
+proc showRasterPlot(){ local i localobj spk
 
-proc showRasterPlot(){
-    gRaster.erase_all()
+    spk = new Vector()
+
+    $o1.erase_all()
     for i = 0, py.ncells - 1 {
         /* Vector.c() creates Vector that has the same number of elements*/
-        spk = spk_times.object(i).c 
-        spk.fill(i+1)
-        spk.mark(gRaster, spk_times.object(i), "|", 6)
+        spk = $o2.object(i).c 
+        spk.fill( i+1 )
+        spk.mark($o1, $o2.object(i), "|", 3)
     }
 
-    objref spk /* de-referencing */
 }
 
-prepareRasterPlot()
-run()
-showRasterPlot()
+/* show raster plot */
+objref spk_list
+spk_list = getSpikeList() 
+
+objref mygraph
+mygraph = new Graph(0)
+mygraph.view(0, 0, tstop, py.ncells, 4, 295, 339.84, 200)
+//run()
+showRasterPlot(mygraph, spk_list)
+
+

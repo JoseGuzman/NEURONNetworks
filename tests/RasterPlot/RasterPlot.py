@@ -93,11 +93,11 @@ for _ in range(ncells):
     cell_list.append( cell )
     
 
-# h.run()
+h.run()
 # Plot first cell
-# plt.plot(cell_list[0].time, cell_list[0].voltage)
-# plt.xlabel('Time (ms)'), plt.ylabel('Potential (mV)')
-# plt.show()
+#plt.plot(cell_list[0].time, cell_list[0].voltage)
+#plt.xlabel('Time (ms)'), plt.ylabel('Potential (mV)')
+#plt.show()
 
 # return spike times
 # print(cell_list[0].spk_times)
