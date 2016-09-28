@@ -1,0 +1,70 @@
+//=========================================================================
+// gRasterPlot.ses
+//
+// Raster plot graphics
+// check the NEURON Book, page 335
+// neurons in the network has to be in a Python list and accessed
+// with a reference to a Python object (e.g. py.BC)
+//=========================================================================
+
+objref py
+py = new PythonObject() /* to access Python objects */
+
+//=========================================================================
+// makestveclist()
+// This function copies the spikes times from the objects in the
+// Python list (cell_list) to hoc Vectors.
+//=========================================================================
+
+//=========================================================================
+// prepareRasterPlot(): 
+//
+// 1.- for each neuron create a new hoc vector 
+// 2.- uses record() of a NetCon class to record the spike time
+//========================================================================
+objref netcon, vec
+objref spk_times  /* hoc Vector to store spike times */
+objref nil        /* dummy variable              */
+objref gRaster    /* rater plot graphic object   */
+
+proc prepareRasterPlot() {
+
+    spk_times = new List()
+
+    print(py.ncells)
+    for i = 0, py.ncells-1 {
+        vec = new Vector() /* create a new hoc vector */
+        netcon = new NetCon(py.cell_list[i].soma(0.5)._ref_v, nil, 0, 0, 0)
+        netcon.record(vec) /* Records the event times with a netcon */
+        spk_times.append(vec)
+    }
+    objref netcon, vec /* de-referencing */
+    
+    gRaster = new Graph(0) /* raster plot */
+    /* last four params of gRaster.view are left, top, widht and heigth*/
+    gRaster.view(0, 0, tstop, py.ncells, 4, 295, 339.84, 200) 
+
+}
+
+//=========================================================================
+// showRasterPlot()
+//
+// we plot a sequence of | whose xcoor are the times at which cell fires
+//=========================================================================
+objref spk /* a vector whose length is the number of spikes */
+
+proc showRasterPlot(){
+    gRaster.erase_all()
+    for i = 0, py.ncells - 1 {
+        /* Vector.c() creates Vector that has the same number of elements*/
+        spk = spk_times.object(i).c 
+        spk.fill(i+1)
+        spk.mark(gRaster, spk_times.object(i), "|", 6)
+    }
+
+    objref spk /* de-referencing */
+}
+
+prepareRasterPlot()
+run()
+showRasterPlot()
