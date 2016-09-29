@@ -16,13 +16,16 @@ from neuron import h, gui
 from Cell_builder import BCbuilder, GCbuilder
 
 h.load_file('stdrun.hoc') # need for h.tstop
-h.tstop = 500
+h.tstop = 200
 
 #=========================================================================
-# 1. create a network of 100 inhibitory neurons 
+# 1. create a network of 100 inhibitory neurons and 1000 principal neurons
 #=========================================================================
-ncells = 100
-BC = [BCbuilder( idx = i) for i in range(ncells)] 
+icells = 100
+BC = [BCbuilder( idx = i) for i in range(icells)] 
+
+ecells = 100
+GC = [GCbuilder( idx = i) for i in range(ecells)] 
 
 #=========================================================================
 # 2. Apply tonic excitatory drive to inhibitory cells 
@@ -44,10 +47,11 @@ def inject_random_current(nrnSection):
 
     return (stim)
 
-stim_list = [inject_random_current(nrnSection = cell.soma) for cell in BC] 
+stim_icells = [inject_random_current(nrnSection = cell.soma) for cell in BC] 
+stim_ecells = [inject_random_current(nrnSection = cell.soma) for cell in GC] 
 
 #=========================================================================
-# 3. Recurrent connections between all icells  
+# 3. Custom connections between all cells  
 #=========================================================================
 def recurrent_inh(cell_list):
     """
@@ -59,7 +63,8 @@ def recurrent_inh(cell_list):
             nc = cell_list[i].connect2target( target = cell_list[j].isyn )
             mynetcon.append( nc )
 
-    return (mynetcon)
+    #return (mynetcon)
+
 
 
 #=========================================================================
@@ -71,6 +76,12 @@ h.load_file('gui/gSingleGraph.hoc')
 #mygraph = h.VoltageGraph()
 h.load_file('gui/gRasterPlot.hoc')
 
+#=========================================================================
+# 5. My custom run 
+#=========================================================================
+def myrun():
+    h.run()
+    h.update_rasterplot()
+
 if '__name__' == '__main__':
-    variable = 100
-    print('hel')
+    pass
