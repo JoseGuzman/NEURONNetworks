@@ -70,8 +70,13 @@ class BCbuilder(object):
         self.isyn.tau = 10.0 # in ms
         self.isyn.e = -75.0      # in mV
 
+        # create an inhibitory synapse in soma
+        self.esyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
+        self.esyn.tau = 10.0 # in ms
+        self.esyn.e = 0.0      # in mV
+
         # a list of connections to other cells
-        self.netcon = list()
+        self._netcon = list()
 
         # hoc Vectors to record time and voltage
         self._voltage = h.Vector()
@@ -101,7 +106,7 @@ class BCbuilder(object):
         # to account for a single synapse 
         netcon.weight[0] = 0.0001/100 
 
-        self.netcon.append(netcon)
+        self._netcon.append(netcon)
 
         return(netcon)
 
@@ -159,6 +164,9 @@ class GCbuilder(object):
         self.esyn.tau = 10.0 # in ms
         self.esyn.e   = 0.0  # in mV
 
+        # a list of connections to other cells
+        self._netcon = list()
+
         # hoc Vectors to record time and voltage
         self._voltage = h.Vector()
         self._voltage.record( self.soma(0.5)._ref_v )
@@ -187,7 +195,7 @@ class GCbuilder(object):
         # to account for a single synapse 
         netcon.weight[0] = 0.0001/100 
 
-        self.netcon.append(netcon)
+        self._netcon.append(netcon)
 
         return(netcon)
 
