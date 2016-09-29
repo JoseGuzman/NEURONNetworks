@@ -1,0 +1,80 @@
+//=========================================================================
+// gSingleGraph.hoc
+//
+// Jose Guzman, sjm.guzman@gmail.com
+// Last change: Thu Sep 29 09:23:01 CEST 2016
+//
+// a collection of Graph hoc objects
+//=========================================================================
+
+objref py
+py = new PythonObject()
+printf("Number of cells = %d\n", py.ncells)
+
+INcells = py.ncells
+myBC = py.BC[0].soma.v
+
+objref mygraph
+strdef cellname
+mygraph = new Graph(0)
+mygraph.size(0, tstop, -80, 40)
+mygraph.view(0, -80, tstop, 120, 375, 25, 700,200)
+mygraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
+graphList[0].append( mygraph )
+sprint(cellname, "%s", "py.BC[0].soma.v")
+mygraph.addexpr(cellname, 2, 2 , 0.11, 1.65, 2)
+
+//=========================================================================
+// VoltageGraph
+//
+//=========================================================================
+begintemplate VoltageGraph 
+
+    public ncells
+
+    external tstop /* allow access to top level definitions */
+    external INcells
+
+    objref mygraph
+    strdef cellname
+
+    proc init(){
+        ncells = 0
+        mygraph = new Graph(0)
+        mygraph.size(0, tstop, -80, 40) // (xmin, xmax, ymin, ymax) 
+        mygraph.view(0, -80, tstop, 120, 375, 295, 700, 200)
+        mygraph.label(0.4, 0.9, "VoltageGraph", 2, 1, 0, 0, 1)
+    }
+
+    proc add_Pycell(){
+        //sprint(cellname, "py.%s",$s1) 
+        //mygraph.addexpr(cellname, 3, 2, 0.11, 0.96, 2)    
+        ncells +=1
+        printf("Number of cells = %i", ncells)
+    }
+    
+endtemplate VoltageGraph 
+/*
+proc testPy(){localobj py, mygraph
+    strdef cellname
+
+    py = new PythonObject()
+    mygraph = new Graph(0)
+
+    mygraph.size(0, tstop, -80, 40)
+    mygraph.view(0, -80, tstop, 120, 375, 25, 700,200)
+    mygraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
+    graphList[0].append( mygraph )
+    sprint(cellname, "%s", "py.BC[0].soma.v")
+    mygraph.addexpr(cellname, 2, 2 , 0.11, 1.65, 2)
+    //py = $s1
+    printf("hello")
+}
+*/
+
+proc printo(){
+
+    strdef mystring
+    sprint(mystring, "py", $s1)
+    printf(mystring)
+}

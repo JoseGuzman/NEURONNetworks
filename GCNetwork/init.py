@@ -1,13 +1,21 @@
 """
 init.py
 
+To execute in Ipython
+%run init.py
+
+In Python from the shell
+$ nrngui init.py -python
+
+>>> import init
+
 """
 
 import numpy as np
 from neuron import h, gui
 from Cell_builder import BCbuilder, GCbuilder
 
-h.load_file('stdrun.hoc')
+h.load_file('stdrun.hoc') # need for h.tstop
 h.tstop = 500
 
 #=========================================================================
@@ -58,3 +66,10 @@ def recurrent_inh(cell_list):
 # 4. Visualize
 #=========================================================================
 
+h.run()
+h.load_file('gui/gSingleGraph.hoc')
+#mygraph = h.VoltageGraph()
+
+if '__name__' == '__main__':
+    variable = 100
+    print('hel')
