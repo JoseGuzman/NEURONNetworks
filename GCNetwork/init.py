@@ -69,6 +69,7 @@ def recurrent_inh(cell_list):
 h.run()
 h.load_file('gui/gSingleGraph.hoc')
 #mygraph = h.VoltageGraph()
+h.load_file('gui/gRasterPlot.hoc')
 
 if '__name__' == '__main__':
     variable = 100
