@@ -112,7 +112,7 @@ class BCbuilder(object):
 
     # getters
     name      = property(lambda self: self.soma.name()[-len(self.myid):] )
-    voltage   = property( lambda self: np.array( self_voltage))
+    voltage   = property( lambda self: np.array( self._voltage))
     time      = property( lambda self: np.array( self._time  ))
     spk_times = property( lambda self: np.array( self._spk_times))
 
@@ -201,7 +201,7 @@ class GCbuilder(object):
 
     # getters
     name = property(lambda self: self.soma.name()[-len(self.myid):] )
-    voltage   = property( lambda self: np.array( self_voltage))
+    voltage   = property( lambda self: np.array( self._voltage))
     time      = property( lambda self: np.array( self._time  ))
     spk_times = property( lambda self: np.array( self._spk_times))
    
