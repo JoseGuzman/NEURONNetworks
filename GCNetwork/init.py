@@ -70,6 +70,15 @@ def recurrent_inh(cell_list):
 
     #return (mynetcon)
 
+def inhibition(pEI, pRI, pLI):
+    """
+    connect inhibitory and excitatory network neurons
+    Arguments:
+    pEI     -- prob of IE connections
+    pRI     -- prob of Recurrent inhibition, P(IE | EI)
+    pLI     -- prob of Lateral inhibition , P(IE| not EI )
+    """
+
 def inhibition2excitation(prob):
     """
     Connects inhibitory to excitatory cells
@@ -83,7 +92,7 @@ def inhibition2excitation(prob):
     mynetcon = list()
     # connect all inhibitory neurons to selected GC
     for BC_cell in BC:
-        idx = np.random.randint(low=0, high=ecells, size= GCsize)
+        idx = np.random.randint(low = 0, high = ecells, size= GCsize)
         for i in idx:
             nc = BC_cell.connect2target( target = GC[i].isyn)
             mynetcon.append( nc ) 
@@ -101,7 +110,7 @@ def excitation2inhibition(prob):
     mynetcon = list()
     # connect all excitatory neurons to selected BC 
     for GC_cell in GC:
-        idx = np.random.randint(low=0, high=icells, size= BCsize)
+        idx = np.random.randint(low = 0, high = icells, size= BCsize)
         for i in idx:
             nc = GC_cell.connect2target( target = BC[i].esyn)
             mynetcon.append( nc ) 
