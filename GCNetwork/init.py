@@ -1,18 +1,26 @@
 """
 init.py
 
+Creates a network of basquet cells (BC) and granule cells (GCs)
+
+TODO: complete simulation description
+
 To execute in Ipython
 %run init.py
 
-In Python from the shell
+directly in a Python shell
 $ nrngui init.py -python
 
-My params:
-recurrent_inh(B)
-inhibition2excitation(0.5)
-excitation2inhibition(0.3)
+To create connections type: 
+>> recurrent_inh(BC)
+>> inhibition2excitation(0.5)
+>> excitation2inhibition(0.3)
+>> myrun() " my cust
 
->>> import init
+The simulation returns 
+1) The total number of spikes in the GC network            
+2) The number GC cells firing in the last 50 ms            
+
 """
 
 import numpy as np
@@ -129,7 +137,7 @@ def myrun():
         spk_count.append( len(spk_times) )
 
         x = np.array(spk_times)
-        if x[x>(h.tstop - 50)]:
+        if len(x[x>(h.tstop - 50)]): # n_spikes in last 50 ms
             idx_GC.append(i)
             cell_count +=1
         
