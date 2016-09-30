@@ -87,6 +87,26 @@ def inhibition(pEI, pRI, pLI):
     pLI     -- prob of Lateral inhibition , P(IE| not EI )
     """
 
+    # Prepare indices of cell subpopulations
+
+    nexc_GCs = int(ecells*pEI)
+    # 1. sub-set of GC sending excitation to BC
+    exc_GC = np.random.randint(low=0, high=ecells, size=nexc_GCs)
+
+    # 2. sub-set of GC lacking excitation to BC
+    nonexc_GC = np.delete( np.arange(ecells), exc_GC )
+
+    # from the sub-set of PV receiving excitation 
+    nri_BCs = nexc_GCs*pRI
+    
+    
+    
+    for cell in exc_GC:
+        GC[cell].connect2target( target = BC[cell].esyn )
+
+    
+
+    
 def inhibition2excitation(prob):
     """
     Connects inhibitory to excitatory cells
