@@ -22,7 +22,7 @@ proc PVRasterPlot(){local i localobj spk_times, spk_bars
 
     for i = 0, py.icells - 1 {
         spk_times = new Vector()
-        spk_times.from_python( py.BC[i].spk_times )
+        spk_times.from_python( py.PV[i].spk_times )
         spk_bars = spk_times.c /* copy same number of elements */
         spk_bars.fill( i+1 ) 
         spk_bars.mark($o1, spk_times, "|", 2, 2)

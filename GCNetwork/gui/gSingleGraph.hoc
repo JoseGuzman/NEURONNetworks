@@ -21,11 +21,11 @@ myINgraph.size(0, tstop, -80, 40)
 myINgraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
 graphList[0].append( myINgraph )
 for i = 1, 9 {
-    sprint(cellname, "%s%d%s", "py.BC[", i, "].soma.v")
+    sprint(cellname, "%s%d%s", "py.PV[", i, "].soma.v")
     myINgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
 }
-sprint(cellname, "%s", "py.BC[0].soma.v")
-myINgraph.addexpr(cellname, 2, 2 , 0.11, 1.65, 2)
+sprint(cellname, "%s", "py.PV[0].soma.v")
+myINgraph.addexpr(cellname, 2, 2 , 0.10, 1.60, 2)
 
 //=========================================================================
 // Plot 10 principal neurons 
@@ -43,7 +43,7 @@ for i = 1, 9 {
     myGCgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
 }
 sprint(cellname, "%s", "py.GC[0].soma.v")
-myGCgraph.addexpr(cellname, 3, 2 , 0.11, 1.65, 2)
+myGCgraph.addexpr(cellname, 3, 2 , 0.10, 1.60, 2)
 
 
 //=========================================================================
@@ -86,7 +86,7 @@ proc testPy(){localobj py, mygraph
     mygraph.view(0, -80, tstop, 120, 375, 25, 700,200)
     mygraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
     graphList[0].append( mygraph )
-    sprint(cellname, "%s", "py.BC[0].soma.v")
+    sprint(cellname, "%s", "py.PV[0].soma.v")
     mygraph.addexpr(cellname, 2, 2 , 0.11, 1.65, 2)
     //py = $s1
     printf("hello")

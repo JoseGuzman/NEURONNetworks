@@ -1,7 +1,7 @@
 """
 init.py
 
-Creates a network of basquet cells (BC) and granule cells (GCs)
+Creates a network of basquet cells (PV) and granule cells (GCs)
 
 TODO: complete simulation description
 
@@ -12,14 +12,15 @@ directly in a Python shell
 $ nrngui init.py -python
 
 To create connections type: 
->> recurrent_inh(BC)
+>> recurrent_inhibitory_connections(PV)
 >> inhibition2excitation(0.5)
 >> excitation2inhibition(0.3)
 >> myrun() " my cust
+>> inhibition(pEI = 0.09765, pRI = 0.24, pLI= 0.3283)
 
 The simulation returns 
 1) The total number of spikes in the GC network            
-2) The number GC cells firing in the last 50 ms            
+2) The number GC cells firing in the last 25 ms            
 
 """
 
@@ -30,15 +31,16 @@ from Cell_builder import BCbuilder, GCbuilder
 np.random.seed(10)
 
 h.load_file('stdrun.hoc') # need for h.tstop
-h.tstop = 300
+h.tstop = 150 
 
 #=========================================================================
 # 1. create a network of 100 inhibitory neurons and 1000 principal neurons
 #=========================================================================
 icells = 100
-BC = [BCbuilder( idx = i) for i in range(icells)] 
+ecells = icells*100 # check ModelDB: 124513 
+#ecells = 100
 
-ecells = 100
+PV = [BCbuilder( idx = i) for i in range(icells)] 
 GC = [GCbuilder( idx = i) for i in range(ecells)] 
 
 #=========================================================================
@@ -60,52 +62,84 @@ def inject_random_current(nrnSection, I_mu = 0.001):
 
     return (stim)
 
-stim_icells = [inject_random_current(cell.soma) for cell in BC] 
-stim_ecells = [inject_random_current(cell.soma, 0.0005) for cell in GC] 
+stim_icells = [inject_random_current(cell.soma) for cell in PV] 
+#stim_ecells = [inject_random_current(cell.soma, 0.00034) for cell in GC] 
+stim_ecells = [inject_random_current(cell.soma, 0.00044) for cell in GC] 
 
 #=========================================================================
 # 3. Custom connections between all cells  
 #=========================================================================
-def recurrent_inh(cell_list):
+def recurrent_inhibitory_connections(cell_list):
     """
-    Connects cells in the list via inhibitory recurrent synapses 
+    Connects all the cells in the list via inhibitory recurrent synapses 
+
+    Arguments:
+    cell_list   -- a list with cell objects
     """
     mynetcon = list()
     for i in range( len(cell_list) ) :
-        for j in np.delete( range(len(cell_list)), i): # avoid auptapse
+        for j in np.delete( range(len(cell_list)), i): # avoid auptapse 
             nc = cell_list[i].connect2target( target = cell_list[j].isyn )
             mynetcon.append( nc )
-
     #return (mynetcon)
 
-def inhibition(pEI, pRI, pLI):
+def inhibition(pEI, pRI, pLI, debug=None):
     """
     connect inhibitory and excitatory network neurons
     Arguments:
     pEI     -- prob of IE connections
     pRI     -- prob of Recurrent inhibition, P(IE | EI)
     pLI     -- prob of Lateral inhibition , P(IE| not EI )
+
+    #===============================
+    # Indices of cell subpopulations
+    #===============================
+    # 1. exc_idx: sub-set of GC sending excitation to PV 
+    # 2. nonexc_idx: sub-set of cells lacking excitation to PV 
+    # 3. RI_PV: sub-set of PV receiving excitation 
+    # 4. LI_PV: sub-set of PV NOT receiving excitation 
     """
-
-    # Prepare indices of cell subpopulations
-
-    nexc_GCs = int(ecells*pEI)
-    # 1. sub-set of GC sending excitation to BC
-    exc_GC = np.random.randint(low=0, high=ecells, size=nexc_GCs)
-
-    # 2. sub-set of GC lacking excitation to BC
-    nonexc_GC = np.delete( np.arange(ecells), exc_GC )
-
-    # from the sub-set of PV receiving excitation 
-    nri_BCs = nexc_GCs*pRI
     
-    
-    
-    for cell in exc_GC:
-        GC[cell].connect2target( target = BC[cell].esyn )
+    # select the first indices for cells that send excitation to PV
+    nexc = int( round(ecells * pEI ) )
+    exc_GC_idx = np.arange(ecells)[:nexc]
 
-    
+    # the rest are cells that does NOT send excitation to PV
+    nonexc_GC_idx = np.arange(ecells)[nexc:]
 
+    # from PV cells receiving excitation, send recurrent inhibition
+    nRI_PV = int( round(nexc * pRI ) )
+    RI_PV_idx = np.random.choice(exc_GC_idx, size = nRI_PV)
+
+    # GC cells that doesn't have recurrent inhibition
+    LI_GC_idx = np.delete( range(ecells), RI_PV_idx ) 
+
+    # from all PV without recurrent inhibition 
+    nonRI_PV_idx = np.delete( range(icells), RI_PV_idx ) 
+    nLI_PV = int( len(nonRI_PV_idx) * pLI )
+    # connect to GC cells without recurrent inhibition
+    LI_PV_idx = np.random.choice( nonRI_PV_idx, size = nLI_PV)
+
+    netcon = list()
+    # Recurrent inhibition requires idx of PV and GC cells to be the same
+    for idx in exc_GC_idx:
+        netcon.append( GC[idx].connect2target( target = PV[idx].esyn ) )
+
+    for idx in RI_PV_idx:
+        netcon.append( PV[idx].connect2target( target = GC[idx].isyn ) )
+
+    # Lateral inhibition 
+    for idx in LI_PV_idx:
+        for edx in LI_GC_idx:
+            netcon.append( PV[idx].connect2target( GC[edx].isyn ) )
+
+    if debug:
+        print( "exc_GC_idx    = %2d"%len(exc_GC_idx) )
+        print( "nonexc_GC_idx = %2d"%len(nonexc_GC_idx ))
+        print( "RI_PV_idx     = %2d"%len(RI_PV_idx) )
+        print( "LI_PV_idx     = %2d"%len(LI_PV_idx))
+        print( "LI_GC_idx     = %2d"%len(LI_PV_idx))
+        print( "netcons       = %2d"%len(netcon) )
     
 def inhibition2excitation(prob):
     """
@@ -119,10 +153,10 @@ def inhibition2excitation(prob):
 
     mynetcon = list()
     # connect all inhibitory neurons to selected GC
-    for BC_cell in BC:
+    for PV_cell in PV:
         idx = np.random.randint(low = 0, high = ecells, size= GCsize)
         for i in idx:
-            nc = BC_cell.connect2target( target = GC[i].isyn)
+            nc = PV_cell.connect2target( target = GC[i].isyn)
             mynetcon.append( nc ) 
 
 def excitation2inhibition(prob):
@@ -133,23 +167,23 @@ def excitation2inhibition(prob):
     
     """
     # get indices of the GCs
-    BCsize = int(ecells*prob)
+    PVsize = int(ecells*prob)
 
     mynetcon = list()
-    # connect all excitatory neurons to selected BC 
+    # connect all excitatory neurons to selected PV 
     for GC_cell in GC:
-        idx = np.random.randint(low = 0, high = icells, size= BCsize)
+        idx = np.random.randint(low = 0, high = icells, size= PVsize)
         for i in idx:
-            nc = GC_cell.connect2target( target = BC[i].esyn)
+            nc = GC_cell.connect2target( target = PV[i].esyn)
             mynetcon.append( nc ) 
 #=========================================================================
 # 4. Visualize
 #=========================================================================
 
-h.run() # run a first simulation without connections
 h.load_file('gui/gSingleGraph.hoc')
 h.load_file('gui/gRasterPlot.hoc')
 
+recurrent_inhibitory_connections(PV)
 #=========================================================================
 # 5. My custom run 
 #=========================================================================
@@ -166,7 +200,7 @@ def myrun():
         spk_count.append( len(spk_times) )
 
         x = np.array(spk_times)
-        if len(x[x>(h.tstop - 50)]): # n_spikes in last 50 ms
+        if len(x[x>(h.tstop - 25)]): # n_spikes in last 25 ms
             idx_GC.append(i)
             cell_count +=1
         
@@ -175,8 +209,5 @@ def myrun():
     
     print('GC[0] has %d spikes'%len(GC[0].spk_times))
     print('Total spikes in GC network = %d'%net_spikes)
-    print('Number of cells firing in last 50 ms = %d'%cell_count)
-    print('Active cells ->%s'%idx_GC)
-
-if '__name__' == '__main__':
-    pass
+    print('Number of cells firing in last 25 ms = %d'%cell_count)
+    #print('Active cells ->%s'%idx_GC)
