@@ -143,7 +143,7 @@ class GCbuilder(object):
         self.soma.gnabar_hhPC = 0.1
         self.soma.gkbar_hhPC  = 0.03
 
-        self.soma.Vtr_hhPC = -53.5  # AP threshold in mV
+        self.soma.Vtr_hhPC = -50.5  # AP threshold in mV
         self.soma.Dur_hhPC = 0.6    # spike duration
         self.soma.Ref_hhPC = 1.5    # refractory period
 

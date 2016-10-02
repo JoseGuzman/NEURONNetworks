@@ -25,8 +25,11 @@ The simulation returns
 """
 
 import numpy as np
+from scipy.stats import norm
+
 from neuron import h, gui
 from Cell_builder import BCbuilder, GCbuilder
+from custom_plots import GC_plot
 
 np.random.seed(10)
 
@@ -62,9 +65,33 @@ def inject_random_current(nrnSection, I_mu = 0.001):
 
     return (stim)
 
+def inject_excitatory_current(cell_list, mean):
+    """
+    Injects current to the given section
+    """
+    # clean all previous stimulus
+    # at cell with idx = mean will receive 0.0004 current
+    rv = norm(loc = mean, scale = 10)
+    
+    start = rv.ppf(0.0001)
+    end   = rv.ppf(0.9999)
+    print(int(start), int(end))
+    cell_idx = np.arange( int(start), int(end) )
+    
+    stim = list()
+    for idx in cell_idx:
+        st = h.IClamp(0.5, sec = cell_list[idx].soma)
+        st.amp = rv.pdf(idx)/100 # mean will receive 0.0004
+        st.dur   = h.tstop
+        st.delay = 0.0
+        stim.append( st )
+    
+    return (stim)
+
 stim_icells = [inject_random_current(cell.soma) for cell in PV] 
 #stim_ecells = [inject_random_current(cell.soma, 0.00034) for cell in GC] 
-stim_ecells = [inject_random_current(cell.soma, 0.00044) for cell in GC] 
+#stim_ecells = [inject_random_current(cell.soma, 0.00044) for cell in GC] 
+stim_ecells = inject_excitatory_current(cell_list = GC, mean = 0) 
 
 #=========================================================================
 # 3. Custom connections between all cells  
@@ -81,6 +108,7 @@ def recurrent_inhibitory_connections(cell_list):
         for j in np.delete( range(len(cell_list)), i): # avoid auptapse 
             nc = cell_list[i].connect2target( target = cell_list[j].isyn )
             mynetcon.append( nc )
+    print("Adding recurrent inhibition")
     #return (mynetcon)
 
 def inhibition(pEI, pRI, pLI, debug=None):
@@ -187,7 +215,7 @@ recurrent_inhibitory_connections(PV)
 #=========================================================================
 # 5. My custom run 
 #=========================================================================
-def myrun():
+def myrun(show_plot=False):
     h.run()
     h.update_rasterplot()
 
@@ -210,4 +238,8 @@ def myrun():
     print('GC[0] has %d spikes'%len(GC[0].spk_times))
     print('Total spikes in GC network = %d'%net_spikes)
     print('Number of cells firing in last 25 ms = %d'%cell_count)
+    if show_plot:
+        myplot = GC_plot(ncells =1024,  active = idx_GC)
+        myplot.show()
+        
     #print('Active cells ->%s'%idx_GC)
