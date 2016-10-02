@@ -12,11 +12,7 @@ directly in a Python shell
 $ nrngui init.py -python
 
 To create connections type: 
->> recurrent_inhibitory_connections(PV)
->> inhibition2excitation(0.5)
->> excitation2inhibition(0.3)
->> myrun() " my cust
->> inhibition(pEI = 0.09765, pRI = 0.24, pLI= 0.3283)
+>>> inhibition(pEI = 0.09765/100, pRI=0.24, pLI=0.3283, debug=1)
 
 The simulation returns 
 1) The total number of spikes in the GC network            
@@ -37,9 +33,9 @@ h.load_file('stdrun.hoc') # need for h.tstop
 h.tstop = 150 
 
 #=========================================================================
-# 1. create a network of 100 inhibitory neurons and 1000 principal neurons
+# 1. create a network of 100 inhibitory neurons and 10,000 granule cells 
 #=========================================================================
-icells = 100
+icells = 50
 ecells = icells*100 # check ModelDB: 124513 
 #ecells = 100
 
@@ -71,27 +67,26 @@ def inject_excitatory_current(cell_list, mean):
     """
     # clean all previous stimulus
     # at cell with idx = mean will receive 0.0004 current
-    rv = norm(loc = mean, scale = 10)
+    rv = norm(loc = mean, scale = 20)
     
     start = rv.ppf(0.0001)
     end   = rv.ppf(0.9999)
-    print(int(start), int(end))
     cell_idx = np.arange( int(start), int(end) )
     
-    stim = list()
+    stim_list = list()
     for idx in cell_idx:
         st = h.IClamp(0.5, sec = cell_list[idx].soma)
-        st.amp = rv.pdf(idx)/100 # mean will receive 0.0004
+        st.amp = rv.pdf(idx)/20 # mean will receive 4
         st.dur   = h.tstop
         st.delay = 0.0
-        stim.append( st )
+        stim_list.append( st )
     
-    return (stim)
+    return (stim_list)
 
-stim_icells = [inject_random_current(cell.soma) for cell in PV] 
+stim_icells = [inject_random_current(icell.soma) for icell in PV] 
 #stim_ecells = [inject_random_current(cell.soma, 0.00034) for cell in GC] 
 #stim_ecells = [inject_random_current(cell.soma, 0.00044) for cell in GC] 
-stim_ecells = inject_excitatory_current(cell_list = GC, mean = 0) 
+stim_ecells = inject_excitatory_current(cell_list = GC, mean = 000) 
 
 #=========================================================================
 # 3. Custom connections between all cells  
@@ -130,17 +125,21 @@ def inhibition(pEI, pRI, pLI, debug=None):
     
     # select the first indices for cells that send excitation to PV
     nexc = int( round(ecells * pEI ) )
-    exc_GC_idx = np.arange(ecells)[:nexc]
+    #exc_GC_idx = np.arange(ecells)[:nexc]
+    exc_GC_idx = np.random.choice( range(ecells), size = nexc)
 
     # the rest are cells that does NOT send excitation to PV
-    nonexc_GC_idx = np.arange(ecells)[nexc:]
+    #nonexc_GC_idx = np.arange(ecells)[nexc:]
+    nonexc_GC_idx = np.delete( range(ecells), exc_GC_idx )
 
     # from PV cells receiving excitation, send recurrent inhibition
     nRI_PV = int( round(nexc * pRI ) )
-    RI_PV_idx = np.random.choice(exc_GC_idx, size = nRI_PV)
+    #RI_PV_idx = np.random.choice(exc_GC_idx, size = nRI_PV)
+    RI_PV_idx = np.arange(nRI_PV) # starting from zero
 
     # GC cells that doesn't have recurrent inhibition
-    LI_GC_idx = np.delete( range(ecells), RI_PV_idx ) 
+    #LI_GC_idx = np.delete( range(ecells), RI_PV_idx ) 
+    LI_GC_idx = exc_GC_idx[:len(RI_PV_idx)]
 
     # from all PV without recurrent inhibition 
     nonRI_PV_idx = np.delete( range(icells), RI_PV_idx ) 
@@ -150,8 +149,8 @@ def inhibition(pEI, pRI, pLI, debug=None):
 
     netcon = list()
     # Recurrent inhibition requires idx of PV and GC cells to be the same
-    for idx in exc_GC_idx:
-        netcon.append( GC[idx].connect2target( target = PV[idx].esyn ) )
+    for n, idx in enumerate(exc_GC_idx):
+        netcon.append( GC[idx].connect2target( target = PV[n].esyn ) )
 
     for idx in RI_PV_idx:
         netcon.append( PV[idx].connect2target( target = GC[idx].isyn ) )
@@ -160,6 +159,9 @@ def inhibition(pEI, pRI, pLI, debug=None):
     for idx in LI_PV_idx:
         for edx in LI_GC_idx:
             netcon.append( PV[idx].connect2target( GC[edx].isyn ) )
+    
+    nconnections = len(exc_GC_idx)+len(RI_PV_idx)+len(LI_PV_idx)
+
 
     if debug:
         print( "exc_GC_idx    = %2d"%len(exc_GC_idx) )
@@ -168,6 +170,11 @@ def inhibition(pEI, pRI, pLI, debug=None):
         print( "LI_PV_idx     = %2d"%len(LI_PV_idx))
         print( "LI_GC_idx     = %2d"%len(LI_PV_idx))
         print( "netcons       = %2d"%len(netcon) )
+
+    try:
+        assert (len(netcon) == nconnections)
+    except:
+        print("Inhibition connections are wrong!")
     
 def inhibition2excitation(prob):
     """

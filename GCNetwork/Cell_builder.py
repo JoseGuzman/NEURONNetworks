@@ -20,27 +20,6 @@ Requires GCTopology_template.hoc and BCTopology_template.hoc
 import numpy as np
 from neuron import h 
 
-class GC(object):
-    """
-    Load a hoc file containing the template of a detailed morphology
-    from a granule cell imported from a neurolucida reconstruction.
-    """
-    def __init__(self):
-
-        h.load_file( 'morphologies/GCTopology_template.hoc' )
-        mycell = h.GCTopology() # must contain GCTopology template!
-        self.soma = mycell.soma
-        self.dend = mycell.dend
-
-        self.allsec = h.SectionList()
-        self.allsec.wholetree( sec = self.soma )
-
-        for sec in self.allsec:
-            sec.insert('pas')
-            sec.cm = 1 # in microF/cm**2
-            sec.Ra = 194 # in Ohms*c
-            sec.g_pas = 1/164e3 # in Ohms*cm**2
-
 class BCbuilder(object):
     """
     A test basquet-cell to perform lighter simulations
