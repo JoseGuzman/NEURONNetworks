@@ -30,13 +30,14 @@ from custom_plots import GC_plot
 np.random.seed(10)
 
 h.load_file('stdrun.hoc') # need for h.tstop
-h.tstop = 150 
+h.tstop = 50 
 
 #=========================================================================
 # 1. create a network of 100 inhibitory neurons and 10,000 granule cells 
 #=========================================================================
-icells = 50
-ecells = icells*100 # check ModelDB: 124513 
+icells = 100
+scaling = 100
+ecells = icells * scaling # check ModelDB: 124513 
 #ecells = 100
 
 PV = [BCbuilder( idx = i) for i in range(icells)] 
@@ -67,6 +68,7 @@ def inject_excitatory_current(cell_list, mean):
     """
     # clean all previous stimulus
     # at cell with idx = mean will receive 0.0004 current
+    # TODO: implement gaussian function, not normal dist!
     rv = norm(loc = mean, scale = 20)
     
     start = rv.ppf(0.0001)
@@ -76,7 +78,7 @@ def inject_excitatory_current(cell_list, mean):
     stim_list = list()
     for idx in cell_idx:
         st = h.IClamp(0.5, sec = cell_list[idx].soma)
-        st.amp = rv.pdf(idx)/20 # mean will receive 4
+        st.amp = rv.pdf(idx)/20 # mean will ????receive 4
         st.dur   = h.tstop
         st.delay = 0.0
         stim_list.append( st )
@@ -117,64 +119,89 @@ def inhibition(pEI, pRI, pLI, debug=None):
     #===============================
     # Indices of cell subpopulations
     #===============================
-    # 1. exc_idx: sub-set of GC sending excitation to PV 
-    # 2. nonexc_idx: sub-set of cells lacking excitation to PV 
-    # 3. RI_PV: sub-set of PV receiving excitation 
-    # 4. LI_PV: sub-set of PV NOT receiving excitation 
+    # ecells: total number of GC cells
+    # icells: total number of PV cells
+    # exc_GC_idx: subpopulation of GCs sending exc. to PV
+    # exc_PV_idx: subpopulation of PV receiving exc. from GC
+    # RI_PV_idx:  subpopulation of exc_PV_idx sending inh. to exc_GC_idx
+    # RI_GC_idx: subpopulation of exc GC_idx receiving inh. from RI_PV_idx
+    # nonexc_GC_idx: subpopulation of GC not sending exc. to PV
+    # nonexc_PV_idx: subpopulation of PV not receiving exc. from GC
+    # LI_PV_idx: subpop. of nonexc_PV_idx sending inh. to nonexc_GC_idx
     """
     
-    # select the first indices for cells that send excitation to PV
-    nexc = int( round(ecells * pEI ) )
-    #exc_GC_idx = np.arange(ecells)[:nexc]
-    exc_GC_idx = np.random.choice( range(ecells), size = nexc)
+    #===================================================================
+    # 1.- Subpopulation of cells involved in excitation 
+    #===================================================================
+    # 1A.- Interneuron subpopulation
+    nexc_PV = int( round( icells * pEI ) )
+    exc_PV_idx = np.random.choice( range(icells),  size = nexc_PV)
 
-    # the rest are cells that does NOT send excitation to PV
-    #nonexc_GC_idx = np.arange(ecells)[nexc:]
+    # 1AA.-Subpopulation of RI interneurons
+    nRI_PV = int( round(nexc_PV * pRI ) )
+    RI_PV_idx = np.random.choice(exc_PV_idx, size = nRI_PV)
+
+    # 1B.- Granule cell sending excitation subpopulation
+    nexc_GC = nexc_PV * scaling # scaling to have divisible integer number
+    exc_GC_idx = np.random.choice( range(ecells), size = nexc_GC)
+
+    # 1C.- Subpopulation of Granule cell receiving inhibtion 
+    nRI_GC = nRI_PV * scaling # to avoid floating points
+    RI_GC_idx = np.random.choice(exc_GC_idx, size = nRI_GC)
+
+    #===================================================================
+    # 2.- Subpopulation of cells not involved in excitation
+    #===================================================================
+    # 2A.- Interneuron subpopulation
+    nonexc_PV_idx = np.delete( range(icells), exc_PV_idx)
+
+    # 2AA.-Subpopulation of LI interneurons
+    nLI_PV = int( round(len(nonexc_PV_idx) * pLI ) )
+    LI_PV_idx = np.random.choice(nonexc_PV_idx, size = nLI_PV)
+
+    # 3AA. - Granule cell non-sending excitation subpopulation
     nonexc_GC_idx = np.delete( range(ecells), exc_GC_idx )
-
-    # from PV cells receiving excitation, send recurrent inhibition
-    nRI_PV = int( round(nexc * pRI ) )
-    #RI_PV_idx = np.random.choice(exc_GC_idx, size = nRI_PV)
-    RI_PV_idx = np.arange(nRI_PV) # starting from zero
-
-    # GC cells that doesn't have recurrent inhibition
-    #LI_GC_idx = np.delete( range(ecells), RI_PV_idx ) 
-    LI_GC_idx = exc_GC_idx[:len(RI_PV_idx)]
-
-    # from all PV without recurrent inhibition 
-    nonRI_PV_idx = np.delete( range(icells), RI_PV_idx ) 
-    nLI_PV = int( len(nonRI_PV_idx) * pLI )
-    # connect to GC cells without recurrent inhibition
-    LI_PV_idx = np.random.choice( nonRI_PV_idx, size = nLI_PV)
+    
+    # 3AB. - Granule cells receiving lateral inhibition
+    nLI_GC = nLI_PV * scaling
+    LI_GC_idx = np.random.choice(nonexc_GC_idx, size = nLI_GC)
 
     netcon = list()
-    # Recurrent inhibition requires idx of PV and GC cells to be the same
-    for n, idx in enumerate(exc_GC_idx):
-        netcon.append( GC[idx].connect2target( target = PV[n].esyn ) )
+    # GC cells converging on to PV cells
+    # divide GC into clusters to be projecting to one PV
+    nClusters = nexc_GC/scaling
+    for pre in range(nClusters):
+        start = pre * scaling 
+        end = start + scaling
+        for post in exc_GC_idx[ start : end ]:
+            netcon.append (GC[post].connect2target( target = PV[pre].esyn))
 
-    for idx in RI_PV_idx:
-        netcon.append( PV[idx].connect2target( target = GC[idx].isyn ) )
+    # connect RI PV cells back to GCs
+    for pre in range(nRI_PV):
+        start = pre * scaling
+        end   = start + scaling 
+        for post in RI_GC_idx[ start: end ]:
+            netcon.append( PV[pre].connect2target( target = GC[post].isyn ))
 
-    # Lateral inhibition 
-    for idx in LI_PV_idx:
-        for edx in LI_GC_idx:
-            netcon.append( PV[idx].connect2target( GC[edx].isyn ) )
-    
-    nconnections = len(exc_GC_idx)+len(RI_PV_idx)+len(LI_PV_idx)
-
-
+    # connect LI PV cells to nonexc_GCs
+    for pre in range(nLI_PV):
+        start = pre * scaling
+        end = start + scaling
+        for post in LI_GC_idx[ start : end ]:
+            netcon.append( PV[pre].connect2target( target = GC[post].isyn))
+        
     if debug:
-        print( "exc_GC_idx    = %2d"%len(exc_GC_idx) )
-        print( "nonexc_GC_idx = %2d"%len(nonexc_GC_idx ))
-        print( "RI_PV_idx     = %2d"%len(RI_PV_idx) )
-        print( "LI_PV_idx     = %2d"%len(LI_PV_idx))
-        print( "LI_GC_idx     = %2d"%len(LI_PV_idx))
+        print( "exc_GC    = %2d"%nexc_GC )
+        print( "nonexc_GC = %2d"%len(nonexc_GC_idx ))
+        print( "RI_GC   = %2d"%nRI_GC )
+        print( "RI_PV = %2d"%nRI_PV )
+        print( "LI_GC   = %2d"%nLI_GC )
+        print( "LI_PV = %2d"%nLI_PV )
         print( "netcons       = %2d"%len(netcon) )
-
-    try:
-        assert (len(netcon) == nconnections)
-    except:
-        print("Inhibition connections are wrong!")
+    """
+        print( "LI_GC_idx     = %2d"%len(LI_GC_idx))
+        print( "LI_PV_idx     = %2d"%len(LI_PV_idx))
+    """
     
 def inhibition2excitation(prob):
     """
