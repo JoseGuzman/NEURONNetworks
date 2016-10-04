@@ -44,6 +44,12 @@ class BCbuilder(object):
         self.soma.diam = self.soma.L = 5.64 # in um
         self.soma.insert('hh_w') # Wang and Buzsaki Na & K channels
 
+        # create current injection in the soma
+        self.iclamp = h.IClamp(0.5, sec = self.soma)
+        self.iclamp.amp = 0.0
+        self.iclamp.dur = 0.0
+        self.iclamp.delay = 0.0
+        
         # create an inhibitory synapse in soma
         self.isyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
         self.isyn.tau = 10.0 # in ms
@@ -133,6 +139,12 @@ class GCbuilder(object):
         self.soma.alphaN_hhPC = 2.2
         self.soma.betaN_hhPC = 0.76
 
+        # create current injection in the soma
+        self.iclamp = h.IClamp(0.5, sec = self.soma)
+        self.iclamp.amp = 0.0
+        self.iclamp.dur = 0.0
+        self.iclamp.delay = 0.0
+
         # Inhibitory synapse in soma
         self.isyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
         self.isyn.tau = 10.0 # in ms
@@ -185,4 +197,6 @@ class GCbuilder(object):
     spk_times = property( lambda self: np.array( self._spk_times))
    
 if __name__ == '__main__':
+    # Cell Builder test
+    GC = GCbuilder()
     pass

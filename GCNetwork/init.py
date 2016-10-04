@@ -30,12 +30,18 @@ from custom_plots import GC_plot
 np.random.seed(10)
 
 h.load_file('stdrun.hoc') # need for h.tstop
-h.tstop = 50 
+h.tstop = 150 
+
+def mygaussian(x, mu, sigma):
+    """
+    a gaussian fucntion with mu and sigma
+    """
+    return np.exp(-np.power(x - mu,2) / (2 * np.power(sigma, 2)))
 
 #=========================================================================
 # 1. create a network of 100 inhibitory neurons and 10,000 granule cells 
 #=========================================================================
-icells = 100
+icells = 50
 scaling = 100
 ecells = icells * scaling # check ModelDB: 124513 
 #ecells = 100
@@ -47,20 +53,19 @@ GC = [GCbuilder( idx = i) for i in range(ecells)]
 # 2. Apply tonic excitatory drive 
 #=========================================================================
 
-def inject_random_current(nrnSection, I_mu = 0.001):
+def inject_random_current(cell, I_mu = 0.001):
     """
     Injects a current of random amplitude and duration to
-    the section given in nrnSection
+    cell    -- a BCbuilder object with Iclamp mechanism
     I_mu    -- mean excitatory drive , 0.001 corresponding to 1 uA/cm^2
+
     """
     I_sigma = 0.00003 # corresponds to 3% heterogeneity
-
-    stim = h.IClamp(0.5, sec = nrnSection )
+    
+    stim = cell.iclamp
     stim.amp   = np.random.normal( loc = I_mu, scale = I_sigma*I_sigma)
     stim.delay = np.abs( np.random.normal( loc = 5, scale = 4 ) )
     stim.dur   = h.tstop - stim.delay
-
-    return (stim)
 
 def inject_excitatory_current(cell_list, mean):
     """
@@ -69,26 +74,29 @@ def inject_excitatory_current(cell_list, mean):
     # clean all previous stimulus
     # at cell with idx = mean will receive 0.0004 current
     # TODO: implement gaussian function, not normal dist!
+    # TODO: change range of cells
+
+    # reset all somatic currents to zero
+    for cell in cell_list:
+        cell.iclamp.amp = 0.0
+        
     rv = norm(loc = mean, scale = 20)
     
     start = rv.ppf(0.0001)
     end   = rv.ppf(0.9999)
-    cell_idx = np.arange( int(start), int(end) )
+    cell_idx = np.arange( int(start), int(end),1) 
     
-    stim_list = list()
-    for idx in cell_idx:
-        st = h.IClamp(0.5, sec = cell_list[idx].soma)
-        st.amp = rv.pdf(idx)/20 # mean will ????receive 4
-        st.dur   = h.tstop
-        st.delay = 0.0
-        stim_list.append( st )
+    for x in cell_idx:
+        cell_list[x].iclamp.amp = rv.pdf(x)/20 # mean will ????receive 4
+        cell_list[x].iclamp.dur = h.tstop
+        cell_list[x].delay = 0.0
     
-    return (stim_list)
+for cell in PV:
+    inject_random_current(cell)
 
-stim_icells = [inject_random_current(icell.soma) for icell in PV] 
 #stim_ecells = [inject_random_current(cell.soma, 0.00034) for cell in GC] 
 #stim_ecells = [inject_random_current(cell.soma, 0.00044) for cell in GC] 
-stim_ecells = inject_excitatory_current(cell_list = GC, mean = 000) 
+#stim_ecells = inject_excitatory_current(cell_list = GC, mean = 000) 
 
 #=========================================================================
 # 3. Custom connections between all cells  
