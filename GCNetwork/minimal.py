@@ -15,20 +15,42 @@ GC = GCbuilder()
 
 # Normal distribution of and average freq = 30 Hz
 # in 1000 ms 30 APs, in 100
-nAPs = int( h.tstop*(30/1000) ) 
-myAPs = np.random.choice(range(h.tstop), size = nAPs)
+nAPs = int( h.tstop*(0.03) )  # (htstop * 30)/1000 for 30 Hz
+AP_times = np.random.choice(range(int(h.tstop)), size = nAPs)
+print(AP_times)
 
 
 # Presynaptic stimulation
+def generate_spk(freq, cellobj):
+    """
+    generate APs in cells at a frequency given in argument
 
-mystim = h.NetStim()
-mystim.number = 1 
-mystim.start = 50
+    Arguments:
+    freq    -- frequency of APs (in Hz) 
+    cellobj -- a cell object
+    """
+    
+    nAPs = int( h.tstop*(freq/1000.) )  # eg.(htstop * 30)/1000 for 30 Hz
+    AP_times = np.random.choice(range( int(h.tstop) ), size = nAPs)
 
+    mystim = list()
+    for time in AP_times:
+    
+        netstim = h.NetStim()
+        netstim.number = 1 
+        netstim.start  = time
 
-ncstim = h.NetCon(mystim, GC.esyn)
-ncstim.delay = 0 
-ncstim.weight[0] = 1.755e-5 # one AP only
+        mystim.append(netstim)
+
+    mynetcon = list()
+    for st in mystim:
+        ncstim = h.NetCon(st, cellobj.esyn)
+        ncstim.delay = 0 
+        ncstim.weight[0] = 1.755e-5 # one AP only
+        
+        mynetcon.append( ncstim)
+    
+    return(mystim, mynetcon)
 
 h.load_file("minimal.ses")
 
