@@ -45,10 +45,10 @@ class BCbuilder(object):
         self.soma.insert('hh_w') # Wang and Buzsaki Na & K channels
 
         # create current injection in the soma
-        self.iclamp = h.IClamp(0.5, sec = self.soma)
-        self.iclamp.amp = 0.0
-        self.iclamp.dur = 0.0
-        self.iclamp.delay = 0.0
+        self.IClamp = h.IClamp(0.5, sec = self.soma)
+        self.IClamp.amp = 0.0
+        self.IClamp.dur = 0.0
+        self.IClamp.delay = 0.0
         
         # create an inhibitory synapse in soma
         self.isyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
@@ -140,10 +140,10 @@ class GCbuilder(object):
         self.soma.betaN_hhPC = 0.76
 
         # create current injection in the soma
-        self.iclamp = h.IClamp(0.5, sec = self.soma)
-        self.iclamp.amp = 0.0
-        self.iclamp.dur = 0.0
-        self.iclamp.delay = 0.0
+        self.IClamp = h.IClamp(0.5, sec = self.soma)
+        self.IClamp.amp = 0.0
+        self.IClamp.dur = 0.0
+        self.IClamp.delay = 0.0
 
         # Inhibitory synapse in soma
         self.isyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
