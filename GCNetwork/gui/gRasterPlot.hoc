@@ -25,7 +25,7 @@ proc PVRasterPlot(){local i localobj spk_times, spk_bars
         spk_times.from_python( py.PV[i].spk_times )
         spk_bars = spk_times.c /* copy same number of elements */
         spk_bars.fill( i+1 ) 
-        spk_bars.mark($o1, spk_times, "|", 2, 2)
+        spk_bars.mark($o1, spk_times, "|", 2, 3)
     }
 
 }
@@ -47,7 +47,7 @@ proc GCRasterPlot(){local i localobj spk_times, spk_bars
         spk_times.from_python( py.GC[i].spk_times )
         spk_bars = spk_times.c /* copy same number of elements */
         spk_bars.fill( i+1 ) 
-        spk_bars.mark($o1, spk_times, "|", 2, 3)
+        spk_bars.mark($o1, spk_times, "|", 2, 2)
     }
 
 }

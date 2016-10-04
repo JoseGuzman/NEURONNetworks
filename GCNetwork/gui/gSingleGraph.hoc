@@ -25,7 +25,7 @@ for i = 1, 9 {
     myINgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
 }
 sprint(cellname, "%s", "py.PV[0].soma.v")
-myINgraph.addexpr(cellname, 2, 2 , 0.10, 1.60, 2)
+myINgraph.addexpr(cellname, 3, 2 , 0.10, 1.60, 2)
 
 //=========================================================================
 // Plot 10 principal neurons 
@@ -43,7 +43,7 @@ for i = 1, 9 {
     myGCgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
 }
 sprint(cellname, "%s", "py.GC[0].soma.v")
-myGCgraph.addexpr(cellname, 3, 2 , 0.10, 1.60, 2)
+myGCgraph.addexpr(cellname, 2, 2 , 0.10, 1.60, 2)
 
 
 //=========================================================================
