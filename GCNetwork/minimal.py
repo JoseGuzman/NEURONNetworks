@@ -1,58 +1,61 @@
 """
 minimal.py 
-a Minimal example of GC cell excitation
+
+a Minimal example of GC-PV connection
     
 """
 import numpy as np
 
 from neuron import h, gui
-from Cell_builder import GCbuilder
+from Cell_builder import GCbuilder, BCbuilder
 
-h.tstop = 1000
+h.tstop = 100 
 h.v_init = -80
 
 GC = GCbuilder()
-
-# Normal distribution of and average freq = 30 Hz
-# in 1000 ms 30 APs, in 100
-nAPs = int( h.tstop*(0.03) )  # (htstop * 30)/1000 for 30 Hz
-AP_times = np.random.choice(range(int(h.tstop)), size = nAPs)
-print(AP_times)
+PV = BCbuilder()
 
 
-# Presynaptic stimulation
-def generate_spk(freq, cellobj):
-    """
-    generate APs in cells at a frequency given in argument
+#=========================================================================
+# Conductance necessary to evoke one spike in GC
+#=========================================================================
+GC_netstim = h.NetStim()
+GC_netstim.number = 1 
+GC_netstim.start  = 55 
 
-    Arguments:
-    freq    -- frequency of APs (in Hz) 
-    cellobj -- a cell object
-    """
-    
-    nAPs = int( h.tstop*(freq/1000.) )  # eg.(htstop * 30)/1000 for 30 Hz
-    AP_times = np.random.choice(range( int(h.tstop) ), size = nAPs)
+GC_ncstim = h.NetCon(GC_netstim, GC.esyn)
+GC_ncstim.delay = 0 
+GC_ncstim.weight[0] = 1.753e-5 # one AP only
 
-    mystim = list()
-    for time in AP_times:
-    
-        netstim = h.NetStim()
-        netstim.number = 1 
-        netstim.start  = time
+#=========================================================================
+# Inhibitory conductance necessary to inhibit one AP in GC: 1.235e-8
+#=========================================================================
+#PV_GCnetcon = PV.connect2target(target = GC.isyn, weight = 1.235e-8)
+#PV_GCnetcon = PV.connect2target(target = GC.isyn, weight = 1.235e-6)
 
-        mystim.append(netstim)
+#=========================================================================
+# Excitatory conductance necessary to evoke one AP in GC: 1.235e-8
+#=========================================================================
+GC_PVnetcon = GC.connect2target(target = PV.esyn, weight = 1.753e-6)
 
-    mynetcon = list()
-    for st in mystim:
-        ncstim = h.NetCon(st, cellobj.esyn)
-        ncstim.delay = 0 
-        ncstim.weight[0] = 1.755e-5 # one AP only
+#=========================================================================
+# Conductance necessary to evoke one spike in PV 
+#=========================================================================
+PV_netstim = h.NetStim()
+PV_netstim.number = 1 
+PV_netstim.start  = 50 
+
+PV_ncstim = h.NetCon(PV_netstim, PV.esyn)
+PV_ncstim.delay = 0 
+#PV_ncstim.weight[0] = 1.622e-05 # one AP only
+PV_ncstim.weight[0] = 3.5e-05 # one AP only with little latency
+
+#=========================================================================
+# Conductance  GC - PV
+#=========================================================================
+#GC_PVnc = GC.connect2target(target = PV.esyn, weight = 1.9e-5)
         
-        mynetcon.append( ncstim)
-    
-    return(mystim, mynetcon)
-
-h.load_file("minimal.ses")
+h.load_file("gminimal.hoc")
 
 h.run()
 """

@@ -1,0 +1,27 @@
+//=========================================================================
+// gminimal.hoc
+//
+// Jose Guzman, sjm.guzman@gmail.com
+// Last change: Tue Oct  4 22:43:27 CEST 2016
+//
+// a simple Graph containing GC and PV neurons 
+//=========================================================================
+
+objref py
+py = new PythonObject()
+
+//=========================================================================
+// Plot GC and PV interneuron
+//=========================================================================
+objref mygraph
+strdef cellname
+mygraph = new Graph(0)
+mygraph.view(0, -80, tstop, 120, 670, 35, 655, 335)
+mygraph.size(0, tstop, -90, 50)
+mygraph.label(0.4, 0.9, "GC-PV spiking", 2, 1, 0, 0, 1)
+graphList[0].append( mygraph )
+
+sprint(cellname, "%s", "py.PV.soma.v")
+mygraph.addexpr(cellname, 3, 2 , 0.8, 0.9, 2)
+sprint(cellname, "%s", "py.GC.soma.v")
+mygraph.addexpr(cellname, 2, 2 , 0.8, 0.9, 2)
