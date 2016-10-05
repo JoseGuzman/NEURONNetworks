@@ -12,7 +12,7 @@ directly in a Python shell
 $ nrngui init.py -python
 
 To create connections type: 
->>> inhibition(pEI = 0.09765/100, pRI=0.24, pLI=0.3283, debug=1)
+>>> inhibition(pEI = 0.09765, pRI=0.24, pLI=0.3283, debug=1)
 
 The simulation returns 
 1) The total number of spikes in the GC network            
@@ -21,6 +21,7 @@ The simulation returns
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 from neuron import h, gui
@@ -31,92 +32,99 @@ np.random.seed(10)
 
 h.load_file('stdrun.hoc') # need for h.tstop
 h.tstop = 150 
-
-def mygaussian(x, mu, sigma):
-    """
-    a gaussian fucntion with mu and sigma
-    """
-    return np.exp(-np.power(x - mu,2) / (2 * np.power(sigma, 2)))
+h.v_init = -80
 
 #=========================================================================
 # 1. create a network of 100 inhibitory neurons and 10,000 granule cells 
 #=========================================================================
-icells = 50
+icells = 50 
 scaling = 100
 ecells = icells * scaling # check ModelDB: 124513 
-#ecells = 100
 
 PV = [BCbuilder( idx = i) for i in range(icells)] 
 GC = [GCbuilder( idx = i) for i in range(ecells)] 
+print('Creating %10d PV'%icells)
+print('Creating %10d GC'%ecells)
 
 #=========================================================================
-# 2. Apply tonic excitatory drive 
+# 2A. Apply tonic excitatory drive to inhibitory cells 
 #=========================================================================
 
-def inject_random_current(cell, I_mu = 0.001):
+def inject_tonic_excitation(cellobj, I_mu = 0.001):
     """
     Injects a current of random amplitude and duration to
-    cell    -- a BCbuilder object with Iclamp mechanism
-    I_mu    -- mean excitatory drive , 0.001 corresponding to 1 uA/cm^2
 
+    Arguments:
+    cellobj   -- a BCbuilder object with Iclamp mechanism
+    I_mu    -- mean excitatory drive , 0.001 corresponding to 1 uA/cm^2
     """
     I_sigma = 0.00003 # corresponds to 3% heterogeneity
     
-    stim = cell.iclamp
+    stim = cellobj.IClamp
     stim.amp   = np.random.normal( loc = I_mu, scale = I_sigma*I_sigma)
     stim.delay = np.abs( np.random.normal( loc = 5, scale = 4 ) )
     stim.dur   = h.tstop - stim.delay
 
-def inject_excitatory_current(cell_list, mean):
+#for cell in PV:
+#    inject_tonic_excitation(cell)
+
+#=========================================================================
+# 2B. Apply random spikes to  excitatory cells 
+#=========================================================================
+def generate_spk(cellobj, freq):
     """
-    Injects current to the given section
+    Generates APs in cells at a given frequency
+
+    Arguments:
+    cellobj   -- a Cellbuilder object with ExpSyn mechanism
+    freq      -- frequency of APs (in Hz)
     """
-    # clean all previous stimulus
-    # at cell with idx = mean will receive 0.0004 current
-    # TODO: implement gaussian function, not normal dist!
-    # TODO: change range of cells
+    nAPs = int( h.tstop*(freq/1000.) ) # freq in 1000 ms
+    AP_times = np.random.choice( range(int(h.tstop)), size = nAPs)
 
-    # reset all somatic currents to zero
-    for cell in cell_list:
-        cell.iclamp.amp = 0.0
-        
-    rv = norm(loc = mean, scale = 20)
-    
-    start = rv.ppf(0.0001)
-    end   = rv.ppf(0.9999)
-    cell_idx = np.arange( int(start), int(end),1) 
-    
-    for x in cell_idx:
-        cell_list[x].iclamp.amp = rv.pdf(x)/20 # mean will ????receive 4
-        cell_list[x].iclamp.dur = h.tstop
-        cell_list[x].delay = 0.0
-    
-for cell in PV:
-    inject_random_current(cell)
+    mynetstim = list()
+    for time in AP_times:
+        netstim = h.NetStim()
+        netstim.number = 1
+        netstim.start = time
 
-#stim_ecells = [inject_random_current(cell.soma, 0.00034) for cell in GC] 
-#stim_ecells = [inject_random_current(cell.soma, 0.00044) for cell in GC] 
-#stim_ecells = inject_excitatory_current(cell_list = GC, mean = 000) 
+        mynetstim.append( netstim )
 
+    mynetcon = list()
+    for st in mynetstim:
+        nc = h.NetCon(st, cellobj.esyn) 
+        nc.weight[0] = 1.755e-5 # one AP only
+
+        mynetcon.append( nc )
+
+    return( mynetstim, mynetcon ) # remember to return mechanisms!
+
+# generate on average 20 Hz
+l = list() # netcoms and netstim must be contained in an object
+for cell in GC:
+    mu = np.random.normal(loc = 20, scale = 5)
+    l.append(generate_spk(cellobj = cell, freq = int(mu)))
 #=========================================================================
 # 3. Custom connections between all cells  
 #=========================================================================
-def recurrent_inhibitory_connections(cell_list):
+def recurrent_inhibitory_connections(cell_list, weight = None):
     """
     Connects all the cells in the list via inhibitory recurrent synapses 
 
     Arguments:
     cell_list   -- a list with cell objects
     """
-    mynetcon = list()
+    if weight is None:
+        myweight = 0.0001/100
+    else:
+        myweight = weight
+
     for i in range( len(cell_list) ) :
         for j in np.delete( range(len(cell_list)), i): # avoid auptapse 
-            nc = cell_list[i].connect2target( target = cell_list[j].isyn )
-            mynetcon.append( nc )
+           cell_list[i].connect2target( cell_list[j].isyn, myweight )
     print("Adding recurrent inhibition")
-    #return (mynetcon)
 
-def inhibition(pEI, pRI, pLI, debug=None):
+def inhibition(pEI, pRI, pLI, debug = None):
     """
     connect inhibitory and excitatory network neurons
     Arguments:
@@ -206,46 +214,7 @@ def inhibition(pEI, pRI, pLI, debug=None):
         print( "LI_GC   = %2d"%nLI_GC )
         print( "LI_PV = %2d"%nLI_PV )
         print( "netcons       = %2d"%len(netcon) )
-    """
-        print( "LI_GC_idx     = %2d"%len(LI_GC_idx))
-        print( "LI_PV_idx     = %2d"%len(LI_PV_idx))
-    """
     
-def inhibition2excitation(prob):
-    """
-    Connects inhibitory to excitatory cells
-
-    prob    -- probability of inhibitory to excitatory connection
-    
-    """
-    # get indices of the GCs
-    GCsize = int(ecells*prob)
-
-    mynetcon = list()
-    # connect all inhibitory neurons to selected GC
-    for PV_cell in PV:
-        idx = np.random.randint(low = 0, high = ecells, size= GCsize)
-        for i in idx:
-            nc = PV_cell.connect2target( target = GC[i].isyn)
-            mynetcon.append( nc ) 
-
-def excitation2inhibition(prob):
-    """
-    Connects excitatory to excitatory cells
-
-    prob    -- probability of inhibitory to excitatory connection
-    
-    """
-    # get indices of the GCs
-    PVsize = int(ecells*prob)
-
-    mynetcon = list()
-    # connect all excitatory neurons to selected PV 
-    for GC_cell in GC:
-        idx = np.random.randint(low = 0, high = icells, size= PVsize)
-        for i in idx:
-            nc = GC_cell.connect2target( target = PV[i].esyn)
-            mynetcon.append( nc ) 
 #=========================================================================
 # 4. Visualize
 #=========================================================================
@@ -253,35 +222,35 @@ def excitation2inhibition(prob):
 h.load_file('gui/gSingleGraph.hoc')
 h.load_file('gui/gRasterPlot.hoc')
 
-recurrent_inhibitory_connections(PV)
+#recurrent_inhibitory_connections(PV)
 #=========================================================================
 # 5. My custom run 
 #=========================================================================
 def myrun(show_plot=False):
+    """
+    Custom run:
+
+    Returns:
+
+    the average spike frequency of every GC in the network
+    """
     h.run()
-    h.update_rasterplot()
+    h.update_rasterplot() # in gui/gRasterPlot
 
-    spk_count = list()
-    cell_count = 0 
-       
-    idx_GC = list() 
+    nactive_GC = 0 # number of cells active in the last 25 ms
+    active_GC_idx = list() # cells active in the last 25 ms
     for i, cell in enumerate(GC):
-        spk_times = cell.spk_times
-        spk_count.append( len(spk_times) )
+        spkt = np.array( cell.spk_times)
+        if len(spkt[spkt > (h.tstop - 25)]): # if spikes in the last 25 ms
+            active_GC_idx.append(i)
+            nactive_GC +=1
 
-        x = np.array(spk_times)
-        if len(x[x>(h.tstop - 25)]): # n_spikes in last 25 ms
-            idx_GC.append(i)
-            cell_count +=1
+    spk_freq = list()
+    for cell in GC:
+        spk_freq.append( len(cell.spk_times)*(1000/h.tstop) )
         
-        
-    net_spikes = np.sum(spk_count)
-    
     print('GC[0] has %d spikes'%len(GC[0].spk_times))
-    print('Total spikes in GC network = %d'%net_spikes)
-    print('Number of cells firing in last 25 ms = %d'%cell_count)
-    if show_plot:
-        myplot = GC_plot(ncells =1024,  active = idx_GC)
-        myplot.show()
-        
-    #print('Active cells ->%s'%idx_GC)
+    print('Number of granule cells firing in last 25 ms = %d'%nactive_GC)
+    print('Average spike frequency = %f'%np.mean(spk_freq))
+
+    return( spk_freq) 
