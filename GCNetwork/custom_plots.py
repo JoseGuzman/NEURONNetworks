@@ -2,10 +2,11 @@
 custom_plots.py
 
 Jose Guzman, sjm.guzman@gmail.com
+Claudia Espinoza, claum.espinoza@gmail.com
 
 Last change: Sun Oct  2 16:05:16 CEST 2016
 
-Plots a network of cells
+Quick plots to represent network of cells
 """
 
 from matplotlib.pyplot import figure, show

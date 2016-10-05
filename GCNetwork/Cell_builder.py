@@ -2,10 +2,10 @@
 Cell_builder.py
 
 Authors: 
-Claudia Espinoza < claumespinoza@gmail.com >
-Jose Guzman < sjm.guzman@gmail.com >
+Claudia Espinoza,  claumespinoza@gmail.com 
+Jose Guzman,  sjm.guzman@gmail.com 
 
-Last change: Wed Sep 28 22:07:44 CEST 2016
+Last change: Wed Oct  5 20:02:57 CEST 2016
 
 File that contains detailed morphologies of granule cells (GC)
 and basquet cells (BC) in the hippocampus
