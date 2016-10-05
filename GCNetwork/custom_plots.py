@@ -75,7 +75,6 @@ def raster(event_times_list, color='b'):
     plt.ylim(.5, len(event_times_list) + .5)
     return ax
 
-
 if __name__ == "__main__":
     #active_cells = range(10,20) 
     #myfig = GC_plot(ncells = 1024, active = active_cells)
