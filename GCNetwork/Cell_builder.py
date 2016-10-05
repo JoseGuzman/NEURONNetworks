@@ -74,7 +74,7 @@ class BCbuilder(object):
         self._spk_times = h.Vector()
         self._nc.record( self._spk_times ) # spike times
         
-    def connect2target(self, target):
+    def connect2target(self, target, weight=None):
         """
         connects the firing of basquet cell to a target via a NetCon
         and appends the NetCon to the netcon list
@@ -87,9 +87,12 @@ class BCbuilder(object):
         netcon = h.NetCon(source, target, sec = self.soma)
         netcon.threshold = 0.0 # overshooting APs
         netcon.delay     = 1.0 # synaptic delay
-        # synaptic weigth in uS, corresponds to 0.1 mS/cm^2 divided by 100
-        # to account for a single synapse 
-        netcon.weight[0] = 0.0001/100 
+
+        if weight is None:
+            # 1.235e-8 will prevent AP in granule cells, see minimal.py
+            netcon.weight[0] = 1.235e-7 
+        else:
+            netcon.weight[0] = weight
 
         self._netcon.append(netcon)
 
@@ -148,7 +151,7 @@ class GCbuilder(object):
         # Inhibitory synapse in soma
         self.isyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
         self.isyn.tau = 10.0 # in ms
-        self.isyn.e = -75.0  # in mV
+        self.isyn.e = -95.0  # in mV
 
         # Excitatory synapse in soma
         self.esyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
@@ -169,7 +172,7 @@ class GCbuilder(object):
         self._spk_times = h.Vector()
         self._nc.record( self._spk_times ) # spike times
 
-    def connect2target(self, target):
+    def connect2target(self, target, weight = None):
         """
         connects the firing of granule cell to a target via a NetCon
         and appends the NetCon to the netcon list
@@ -182,9 +185,12 @@ class GCbuilder(object):
         netcon = h.NetCon(source, target, sec = self.soma)
         netcon.threshold = 0.0 # overshooting APs
         netcon.delay     = 1.0 # synaptic delay
-        # synaptic weigth in uS, corresponds to 0.1 mS/cm^2 divided by 100
-        # to account for a single synapse 
-        netcon.weight[0] = 0.0001/100 
+
+        if weight is None:
+            # 1.7535e-5 will evoke an AP in granule cells, see minimal.py
+            netcon.weight[0] = 1.7535e-6
+        else:
+            netcon.weight[0] = weight
 
         self._netcon.append(netcon)
 

@@ -13,8 +13,12 @@ py = new PythonObject()
 //=========================================================================
 // Init & Running plot 
 //=========================================================================
-xpanel("Run", 0)
-xcheckbox("Init & Run",&running_,"runbutton()")
+//xpanel("Run", 0)
+//xcheckbox("Init & Run",&running_,"runbutton()")
+//xpanel(480,34)
+
+xpanel("myRun", 0)
+xcheckbox("myRun",&running_,"update_rasterplot()")
 xpanel(380,34)
 
 //=========================================================================

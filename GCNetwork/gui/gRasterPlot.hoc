@@ -60,6 +60,7 @@ GCgraph = new Graph(0)
 GCgraph.view(0, 0, tstop, py.ecells, 1, 393, 340, 200)
 
 proc update_rasterplot(){
+    run()
     PVRasterPlot(PVgraph)
     GCRasterPlot(GCgraph)
 }

@@ -34,9 +34,9 @@ GC_ncstim.weight[0] = 1.753e-5 # one AP only
 #PV_GCnetcon = PV.connect2target(target = GC.isyn, weight = 1.235e-6)
 
 #=========================================================================
-# Excitatory conductance necessary to evoke one AP in GC: 1.235e-8
+# Excitatory conductance necessary to evoke one AP in GC: 1.753e-5
 #=========================================================================
-GC_PVnetcon = GC.connect2target(target = PV.esyn, weight = 1.753e-6)
+#GC_PVnetcon = GC.connect2target(target = PV.esyn, weight = 1.753e-6)
 
 #=========================================================================
 # Conductance necessary to evoke one spike in PV 
@@ -50,16 +50,6 @@ PV_ncstim.delay = 0
 #PV_ncstim.weight[0] = 1.622e-05 # one AP only
 PV_ncstim.weight[0] = 3.5e-05 # one AP only with little latency
 
-#=========================================================================
-# Conductance  GC - PV
-#=========================================================================
-#GC_PVnc = GC.connect2target(target = PV.esyn, weight = 1.9e-5)
-        
 h.load_file("gminimal.hoc")
 
 h.run()
-"""
-GC.IClamp.amp = 0.00205 #generates 1AP
-GC.IClamp.dur = 2 
-GC.IClamp.delay = 50
-"""
