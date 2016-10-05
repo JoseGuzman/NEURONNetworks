@@ -2,9 +2,11 @@
 // gSingleGraph.hoc
 //
 // Jose Guzman, sjm.guzman@gmail.com
+// Claudia Espinoza, claum.espinoza@gmail.com
 // Last change: Wed Oct  5 09:55:59 CEST 2016
 //
-// a collection of Graph hoc objects
+// a collection of Graph hoc objects to plot simple Graphs in NEURON
+// requires init.py
 //=========================================================================
 
 objref py

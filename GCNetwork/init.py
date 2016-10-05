@@ -1,6 +1,9 @@
 """
 init.py
 
+Jose Guzman, sjm.guzman@gmail.com
+Claudia Espinoza, claumespinoza@gmail.com
+
 Creates a network of basquet cells (PV) and granule cells (GCs)
 
 TODO: complete simulation description
@@ -11,7 +14,7 @@ To execute in Ipython
 directly in a Python shell
 $ nrngui init.py -python
 
-To create connections type: 
+To implement different connections types and probabilities: 
 >>> inhibition(pEI = 0.09765, pRI = 0.24, pLI = 0.3283, debug=1)
 
 The simulation returns 

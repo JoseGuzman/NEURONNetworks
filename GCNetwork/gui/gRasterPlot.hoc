@@ -2,8 +2,11 @@
 // gRasterPlot.hoc
 //
 // Jose Guzman, sjm.guzman@gmail.com
+// Claudia Espinoza, claum.espinoza@gmail.com
+//
 // Last change: Wed Oct  5 09:57:08 CEST 2016
 // 
+// Utilities to plot raster plots in NEURON, requires init.py
 //=========================================================================
 
 objref py
