@@ -9,6 +9,7 @@ Plots a network of cells
 """
 
 from matplotlib.pyplot import figure, show
+import matplotlib.pyplot as plt
 from matplotlib.collections import RegularPolyCollection
 
 import itertools
@@ -55,10 +56,38 @@ def GC_plot(ncells, active):
 
     return(fig)
 
+def raster(event_times_list, color='b'):
+    """
+    Creates a raster plot
+    Parameters
+    ----------
+    event_times_list : iterable
+                       a list of event time iterables
+    color : string
+            color of vlines
+    Returns
+    -------
+    ax : an axis containing the raster plot
+    """
+    ax = plt.gca()
+    for ith, trial in enumerate(event_times_list):
+        plt.vlines(trial, ith + .5, ith + 1.5, color=color)
+    plt.ylim(.5, len(event_times_list) + .5)
+    return ax
+
+
 if __name__ == "__main__":
-    active_cells = range(10,20) 
-    myfig = GC_plot(ncells = 1024, active = active_cells)
-    myfig.show()
+    #active_cells = range(10,20) 
+    #myfig = GC_plot(ncells = 1024, active = active_cells)
+    #myfig.show()
+    spikes = np.load('PVrasterEI_0.25.npy')
+    fig = figure()
+    ax = raster(spikes, color='blue')
+    plt.title('Example raster plot')
+    plt.xlim(0, 150)
+    plt.xlabel('time')
+    plt.ylabel('cell')
+    fig.show()
     
 
 
