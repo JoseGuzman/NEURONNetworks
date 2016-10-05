@@ -2,7 +2,7 @@
 // gSingleGraph.hoc
 //
 // Jose Guzman, sjm.guzman@gmail.com
-// Last change: Thu Sep 29 09:23:01 CEST 2016
+// Last change: Wed Oct  5 09:55:59 CEST 2016
 //
 // a collection of Graph hoc objects
 //=========================================================================
@@ -18,7 +18,7 @@ py = new PythonObject()
 //xpanel(480,34)
 
 xpanel("myRun", 0)
-xcheckbox("myRun",&running_,"update_rasterplot()")
+xcheckbox("myRun",&running_,"update_rasterplot()") /* will call run */
 xpanel(380,34)
 
 //=========================================================================

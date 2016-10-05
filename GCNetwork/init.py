@@ -12,7 +12,7 @@ directly in a Python shell
 $ nrngui init.py -python
 
 To create connections type: 
->>> inhibition(pEI = 0.09765, pRI=0.24, pLI=0.3283, debug=1)
+>>> inhibition(pEI = 0.09765, pRI = 0.24, pLI = 0.3283, debug=1)
 
 The simulation returns 
 1) The total number of spikes in the GC network            
@@ -65,8 +65,6 @@ def inject_tonic_excitation(cellobj, I_mu = 0.001):
     stim.delay = np.abs( np.random.normal( loc = 5, scale = 4 ) )
     stim.dur   = h.tstop - stim.delay
 
-#for cell in PV:
-#    inject_tonic_excitation(cell)
 
 #=========================================================================
 # 2B. Apply random spikes to  excitatory cells 
@@ -99,11 +97,7 @@ def generate_spk(cellobj, freq):
 
     return( mynetstim, mynetcon ) # remember to return mechanisms!
 
-# generate on average 20 Hz
-l = list() # netcoms and netstim must be contained in an object
-for cell in GC:
-    mu = np.random.normal(loc = 20, scale = 5)
-    l.append(generate_spk(cellobj = cell, freq = int(mu)))
+
 #=========================================================================
 # 3. Custom connections between all cells  
 #=========================================================================
@@ -222,20 +216,38 @@ def inhibition(pEI, pRI, pLI, debug = None):
 h.load_file('gui/gSingleGraph.hoc')
 h.load_file('gui/gRasterPlot.hoc')
 
-#recurrent_inhibitory_connections(PV)
 #=========================================================================
-# 5. My custom run 
+# 5. Prepare topologies 
 #=========================================================================
-def myrun(show_plot=False):
+recurrent_inhibitory_connections(PV)
+
+for cell in PV:
+    inject_tonic_excitation(cell)
+
+myfreq = 20 # average spiking frequency
+l = list() # netcons and netstim must be contained in an object
+for cell in GC:
+    mu = np.random.normal(loc = myfreq, scale = 0.00003*0.00003)
+    l.append(generate_spk(cellobj = cell, freq = int(mu)))
+
+print('%2d Hz average spiking on GC'%myfreq)
+
+#inhibition(pEI = 0.09765, pRI = 0.24, pLI = 0.3283, debug=1)
+
+#=========================================================================
+# 6. My custom run 
+#=========================================================================
+def myrun():
     """
     Custom run:
+
+    freq    -- average spike frequency of GCs
 
     Returns:
 
     the average spike frequency of every GC in the network
     """
-    h.run()
-    h.update_rasterplot() # in gui/gRasterPlot
+    h.update_rasterplot() # will call run in gui/gRasterPlot  
 
     nactive_GC = 0 # number of cells active in the last 25 ms
     active_GC_idx = list() # cells active in the last 25 ms

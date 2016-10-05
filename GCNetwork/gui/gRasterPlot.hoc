@@ -2,6 +2,7 @@
 // gRasterPlot.hoc
 //
 // Jose Guzman, sjm.guzman@gmail.com
+// Last change: Wed Oct  5 09:57:08 CEST 2016
 // 
 //=========================================================================
 
@@ -65,5 +66,5 @@ proc update_rasterplot(){
     GCRasterPlot(GCgraph)
 }
 
-update_rasterplot()
+//update_rasterplot()
 
