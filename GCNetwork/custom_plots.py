@@ -4,13 +4,13 @@ custom_plots.py
 Jose Guzman, sjm.guzman@gmail.com
 Claudia Espinoza, claum.espinoza@gmail.com
 
-Last change: Sun Oct  2 16:05:16 CEST 2016
+Last change: Thu Oct  6 20:58:42 CEST 2016
 
-Quick plots to represent network of cells
+Plots to represent network of cells
 """
 
-from matplotlib.pyplot import figure, show
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure, show
 from matplotlib.collections import RegularPolyCollection
 
 import itertools
@@ -43,7 +43,7 @@ def GC_plot(ncells, active):
     myhex = RegularPolyCollection(numsides = 6, sizes = mysizes,
         offsets = myoffsets, transOffset = ax.transData)
 
-    myfacecolors = ['#FFFF66']*ncells
+    myfacecolors = ['#FFFF66']*ncells # yellow
     for i in active:
         myfacecolors[i] = 'black'
 
@@ -57,23 +57,28 @@ def GC_plot(ncells, active):
 
     return(fig)
 
-def raster(event_times_list, color='b'):
+def raster(spk_list, color='b'):
     """
-    Creates a raster plot
-    Parameters
-    ----------
-    event_times_list : iterable
-                       a list of event time iterables
-    color : string
-            color of vlines
-    Returns
-    -------
+    Creates a raster plot from a list of spike times that can be 
+    generated from a network of Cellbuilder objects.
+
+    Arguments:
+    spk_list    -- (list) of spike times (e.g. list of cell.spk_times)
+    color       -- (str) with the color of the lines
+
+    Returns:
     ax : an axis containing the raster plot
     """
-    ax = plt.gca()
-    for ith, trial in enumerate(event_times_list):
-        plt.vlines(trial, ith + .5, ith + 1.5, color=color)
-    plt.ylim(.5, len(event_times_list) + .5)
+
+    ax = plt.gca() # get current axis
+
+    for n, spk in enumerate( spk_list ): #n is cells in the network
+        ymin = n + 0.5
+        ymax = n + 1.5
+        plt.vlines(spk, ymin, ymax, color = color)
+
+    ymin, ymax  = 0.5, ymax = 0.5 + len(spk_list) 
+    plt.ylim(ymin, ymax)
     return ax
 
 if __name__ == "__main__":
@@ -86,7 +91,7 @@ if __name__ == "__main__":
     plt.title('Example raster plot')
     plt.xlim(0, 150)
     plt.xlabel('time')
-    plt.ylabel('cell')
+    plt.ylabel('Cell index')
     fig.show()
     
 
