@@ -1,0 +1,68 @@
+//=========================================================================
+// gRasterPlot.hoc
+//
+// Jose Guzman, sjm.guzman@gmail.com
+//
+// Last change: Wed Oct 12 14:37:05 CEST 2016
+// Adapt for PC firing
+// 
+// Utilities to plot raster plots in NEURON, requires init.py
+//=========================================================================
+
+objref py
+py = new PythonObject()
+//=========================================================================
+// PBRasterPlot()
+//
+// Raster plot with the spiking of all basquet cells
+// Arguments:
+// $o1  -- a Graph object
+//=========================================================================
+proc PVRasterPlot(){local i localobj spk_times, spk_bars
+
+    $o1.erase_all() /* clear Graph */
+    $o1.label(0.2, 0.9, "PV cells", 2, 1, 0, 0, 1)
+
+    for i = 0, py.icells - 1 {
+        spk_times = new Vector()
+        spk_times.from_python( py.PV[i].spk_times )
+        spk_bars = spk_times.c /* copy same number of elements */
+        spk_bars.fill( i+1 ) 
+        spk_bars.mark($o1, spk_times, "|", 2, 3)
+    }
+
+}
+//=========================================================================
+// PCRasterPlot()
+//
+// Raster plot with the spiking of all granule cells
+// Arguments:
+// $o1  -- a Graph object
+//=========================================================================
+proc PCRasterPlot(){local i localobj spk_times, spk_bars
+
+    $o1.erase_all() /* clear Graph */
+    $o1.label(0.2, 0.9, "PC cells", 2, 1, 0, 0, 1)
+
+    for i = 0, py.ecells - 1 {
+        spk_times = new Vector()
+        spk_times.from_python( py.PC[i].spk_times )
+        spk_bars = spk_times.c /* copy same number of elements */
+        spk_bars.fill( i+1 ) 
+        spk_bars.mark($o1, spk_times, "|", 2, 2)
+    }
+
+}
+objref PVgraph
+PVgraph = new Graph(0)
+PVgraph.view(0, 0, tstop, py.icells, 1, 125, 340, 200) /* x,y, xlen, ylen */
+
+objref PCgraph
+PCgraph = new Graph(0)
+PCgraph.view(0, 0, tstop, py.ecells, 1, 393, 340, 200)
+
+proc update_rasterplot(){
+    run()
+    PVRasterPlot(PVgraph)
+    PCRasterPlot(PCgraph)
+}

@@ -1,0 +1,56 @@
+//=========================================================================
+// gSingleGraph.hoc
+//
+// Jose Guzman, sjm.guzman@gmail.com
+// Last change : Wed Oct 12 16:18:46 CEST 2016
+//
+// a collection of Graph hoc objects to plot simple Graphs in NEURON
+// requires init.py
+//=========================================================================
+
+objref py
+py = new PythonObject()
+
+//=========================================================================
+// Init & Running plot 
+//=========================================================================
+
+xpanel("myRun", 0)
+xcheckbox("myRun",&running_,"update_rasterplot()") /* will call run */
+xpanel(380,34)
+
+//=========================================================================
+// Plot 10 interneurons
+//=========================================================================
+objref myINgraph
+strdef cellname
+myINgraph = new Graph(0)
+myINgraph.view(0, -80, tstop, 120, 372, 125, 305,200)
+myINgraph.size(0, tstop, -80, 40)
+myINgraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
+graphList[0].append( myINgraph )
+for i = 1, 9 {
+    sprint(cellname, "%s%d%s", "py.PV[", i, "].soma.v")
+    myINgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
+}
+sprint(cellname, "%s", "py.PV[0].soma.v")
+myINgraph.addexpr(cellname, 3, 2 , 0.10, 1.60, 2)
+
+//=========================================================================
+// Plot 10 principal neurons 
+//=========================================================================
+
+objref myPCgraph
+
+myPCgraph = new Graph(0)
+myPCgraph.view(0, -80, tstop, 120, 372, 393, 305, 200)
+myPCgraph.size(0, tstop, -100, 85)
+myPCgraph.label(0.4, 0.9, "PC spiking", 2, 1, 0, 0, 1)
+graphList[0].append( myPCgraph )
+for i = 1, 9 {
+    sprint(cellname, "%s%d%s", "py.PC[", i, "].soma.v")
+    myPCgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
+}
+sprint(cellname, "%s", "py.PC[0].soma.v")
+myPCgraph.addexpr(cellname, 2, 2 , 0.10, 1.60, 2)
+
