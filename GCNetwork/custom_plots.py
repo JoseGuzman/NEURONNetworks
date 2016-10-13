@@ -73,12 +73,34 @@ def raster(spk_list, color='b'):
     ax = plt.gca() # get current axis
 
     for n, spk in enumerate( spk_list ): #n is cells in the network
-        ymin = n + 0.5
-        ymax = n + 1.5
-        plt.vlines(spk, ymin, ymax, color = color)
+        start = n + 0.5
+        end = n + 1.5
+        plt.vlines(spk, start, end, color = color, linewidth=10)
 
-    ymin, ymax  = 0.5, ymax = 0.5 + len(spk_list) 
+    ymin = 0.5, 
+    ymax = 0.5 + len(spk_list) 
     plt.ylim(ymin, ymax)
+    plt.xlim(0, 150)
+    return ax
+
+def raster2(event_times_list, color='k'):
+    """
+    Creates a raster plot
+    Parameters
+    ----------
+    event_times_list : iterable
+                       a list of event time iterables
+    color : string
+            color of vlines
+    Returns
+    -------
+    ax : an axis containing the raster plot
+    """
+    ax = plt.gca()
+    for ith, trial in enumerate(event_times_list):
+        plt.vlines(trial, ith + .5, ith + 19.5, color=color, linewidth=1)
+    plt.ylim(.5, len(event_times_list) + .5)
+    plt.xlim(0, 150)
     return ax
 
 if __name__ == "__main__":

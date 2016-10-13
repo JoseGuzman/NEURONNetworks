@@ -69,23 +69,31 @@ for i in pre:
 #=========================================================================
 # 4. Connect inhibitory to excitatory cells 
 #=========================================================================
-def inhibition():
+def inhibition(myweight=None):
     """
     Connects inhibitory cells to excitatory neurons
     accounting for the scaling factor to have the
     same probability of connection.
+    
+    Arguments:
+    myweight    -- synaptic weight to be added to the connection
     """
+    if myweight is None:
+        weight = 1.5e-5
+    else:   
+        weight = myweight
+    
     pIE = 0.90
     nPVcells = int( pIE*icells ) # number of connected cells
+
     # connect PV cells with PCs
-    netconlist = list()
     for pre in range(nPVcells):
         start = pre * scaling
         end   = start + scaling 
         for post in range(start, end):
-            netconlist.append(PV[pre].connect2target( target = PC[post].isyn ))
-    return(netconlist)
-
+            PCpost = PC[post].isyn
+            mynetcon = PV[pre].connect2target(target=PCpost,weight=weight)
+    print("Adding inhibition to excitation")
 
 #=========================================================================
 # Visualize
@@ -93,7 +101,8 @@ def inhibition():
 
 h.load_file('gui/gSingleGraph.hoc')
 h.load_file('gui/gRasterPlot.hoc')
-h.update_rasterplot()
+#h.update_rasterplot()
+
 #=========================================================================
 # 5. My custom run 
 #=========================================================================
