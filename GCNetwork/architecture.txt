@@ -1,0 +1,13 @@
+
+loading membrane mechanisms from x86_64/.libs/libnrnmech.so
+Additional mechanisms from files
+ mod/HHpulseC.mod mod/net_hh_w.mod
+Creating         50 PV
+Creating       5000 GC
+exc_GC    = 500
+nonexc_GC = 4519
+RI_GC   = 100
+RI_PV =  1
+LI_GC   = 1500
+LI_PV = 15
+netcons       = 2100
