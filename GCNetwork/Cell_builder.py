@@ -5,17 +5,16 @@ Authors:
 Claudia Espinoza,  claumespinoza@gmail.com 
 Jose Guzman,  sjm.guzman@gmail.com 
 
-Last change: Wed Oct  5 20:02:57 CEST 2016
+Last change: Mon Nov  7 19:59:22 CET 2016
+excitatory synapses tau = 5 ms
 
 File that contains detailed morphologies of granule cells (GC)
 and basquet cells (BC) in the hippocampus
 
 To use it:
 
->>> from Cell_builder import GC
+>>> from Cell_builder import GCbuilder
 >>> myGC = GC()
-
-Requires GCTopology_template.hoc and BCTopology_template.hoc
 """
 import numpy as np
 from neuron import h 
@@ -55,7 +54,7 @@ class BCbuilder(object):
         self.isyn.tau = 10.0 # in ms
         self.isyn.e = -75.0      # in mV
 
-        # create an inhibitory synapse in soma
+        # create an excitatory synapse in soma
         self.esyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
         self.esyn.tau = 10.0 # in ms
         self.esyn.e = 0.0      # in mV
@@ -124,15 +123,15 @@ class GCbuilder(object):
 
         self.soma.diam = self.soma.L = 2.0 # in um
         self.soma.insert('pas')
-        self.soma.g_pas = 1e-4
+        self.soma.g_pas = 1e-4 # Siemens * cm^2
         self.soma.e_pas = -80.0 # in mV
         self.soma.insert('hhPC') # Hodking and Huxley Na & K channels
         self.soma.ek = -90.0 # in mV
         self.soma.gnabar_hhPC = 0.1
         self.soma.gkbar_hhPC  = 0.03
 
-        self.soma.Vtr_hhPC = -50.5  # AP threshold in mV
-        self.soma.Dur_hhPC = 0.6    # spike duration
+        self.soma.Vtr_hhPC = -50.0  # AP threshold in mV
+        self.soma.Dur_hhPC = 1.0    # spike duration
         self.soma.Ref_hhPC = 1.5    # refractory period
 
         self.soma.alphaM_hhPC = 22
@@ -155,7 +154,7 @@ class GCbuilder(object):
 
         # Excitatory synapse in soma
         self.esyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
-        self.esyn.tau = 10.0 # in ms
+        self.esyn.tau = 5.0 # in ms
         self.esyn.e   = 0.0  # in mV
 
         # a list of connections to other cells
