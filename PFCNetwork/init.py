@@ -101,6 +101,14 @@ def inhibition(myweight=None):
 
 h.load_file('gui/gSingleGraph.hoc')
 h.load_file('gui/gRasterPlot.hoc')
+# PC 13 has working memory activity
+PC[13].soma.push() # set currently accessed section
+mygraph = h.Graph()
+#mygraph.size(0, h.tstop, -80, 40)
+mygraph.view(0, -80, h.tstop, 120, 372, 125, 305, 200)
+
+
+
 #h.update_rasterplot()
 
 #=========================================================================

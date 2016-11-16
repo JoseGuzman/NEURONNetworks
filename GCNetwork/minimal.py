@@ -25,13 +25,13 @@ GC_netstim.start  = 55
 
 GC_ncstim = h.NetCon(GC_netstim, GC.esyn)
 GC_ncstim.delay = 0 
-GC_ncstim.weight[0] = 1.753e-5 # one AP only
+GC_ncstim.weight[0] = 2.6e-5 # one AP only
 
 #=========================================================================
 # Inhibitory conductance necessary to inhibit one AP in GC: 1.235e-8
 #=========================================================================
 #PV_GCnetcon = PV.connect2target(target = GC.isyn, weight = 1.235e-8)
-#PV_GCnetcon = PV.connect2target(target = GC.isyn, weight = 1.235e-6)
+#PV_GCnetcon = PV.connect2target(target = GC.isyn, weight = 1.235e-5)
 
 #=========================================================================
 # Excitatory conductance necessary to evoke one AP in GC: 1.753e-5
@@ -48,7 +48,7 @@ PV_netstim.start  = 50
 PV_ncstim = h.NetCon(PV_netstim, PV.esyn)
 PV_ncstim.delay = 0 
 #PV_ncstim.weight[0] = 1.622e-05 # one AP only
-PV_ncstim.weight[0] = 3.5e-05 # one AP only with little latency
+PV_ncstim.weight[0] = 3.5e-05 # Siemens * cm^2 one AP only with little latency
 
 h.load_file("gminimal.hoc")
 

@@ -54,7 +54,7 @@ class BCbuilder(object):
         self.isyn.tau = 10.0 # in ms
         self.isyn.e = -75.0      # in mV
 
-        # create an inhibitory synapse in soma
+        # create an excitatory synapse in soma
         self.esyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
         self.esyn.tau = 10.0 # in ms
         self.esyn.e = 0.0      # in mV
