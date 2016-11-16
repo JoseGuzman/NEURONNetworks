@@ -41,6 +41,7 @@ class BCbuilder(object):
         self.soma = h.Section(name = self.myid, cell = self)
         self.soma.nseg = 1
 
+        # Surface is diam*diam*PI = 5.64*5.64*PI = ~100 um^2
         self.soma.diam = self.soma.L = 5.64 # in um
         self.soma.insert('hh_w') # Wang and Buzsaki Na & K channels
 
@@ -55,7 +56,7 @@ class BCbuilder(object):
         self.isyn.tau = 10.0 # in ms
         self.isyn.e = -75.0      # in mV
 
-        # create an inhibitory synapse in soma
+        # create an excitatory synapse in soma
         self.esyn = h.ExpSyn(self.soma(0.5), sec=self.soma)
         self.esyn.tau = 10.0 # in ms
         self.esyn.e = 0.0      # in mV
@@ -99,7 +100,7 @@ class BCbuilder(object):
         return(netcon)
 
     # getters
-    name      = property(lambda self: self.soma.name()[-len(self.myid):] )
+    name      = property( lambda self: self.soma.name()[-len(self.myid):] )
     voltage   = property( lambda self: np.array( self._voltage))
     time      = property( lambda self: np.array( self._time  ))
     spk_times = property( lambda self: np.array( self._spk_times))
@@ -122,6 +123,7 @@ class GCbuilder(object):
         self.soma = h.Section(name = self.myid, cell = self)
         self.soma.nseg = 1
 
+        # Surface is 2*2*PI* = 2*2.0*PI = 12.56 um^2
         self.soma.diam = self.soma.L = 2.0 # in um
         self.soma.insert('pas')
         self.soma.g_pas = 1e-4
