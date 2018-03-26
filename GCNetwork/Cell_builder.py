@@ -2,13 +2,13 @@
 Cell_builder.py
 
 Authors: 
-Claudia Espinoza,  claumespinoza@gmail.com 
 Jose Guzman,  sjm.guzman@gmail.com 
+Claudia Espinoza,  claumespinoza@gmail.com 
 
 Last change: Mon Nov  7 19:59:22 CET 2016
 excitatory synapses tau = 5 ms
 
-File that contains detailed morphologies of granule cells (GC)
+File that contains advanced morphologies of granule cells (GC)
 and basquet cells (BC) in the hippocampus
 
 To use it:
