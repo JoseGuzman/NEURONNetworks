@@ -1,0 +1,89 @@
+//=========================================================================
+// gSingleGraph.hoc
+//
+// Jose Guzman, sjm.guzman@gmail.com
+// Last change: Mon Mar 26 12:05:35 CEST 2018
+//
+// a collection of Graph hoc objects to plot simple Graphs in NEURON
+// requires init.py
+//=========================================================================
+
+objref py
+py = new PythonObject()
+
+//=========================================================================
+// Init & Running plot 
+//=========================================================================
+//xpanel("Run", 0)
+//xcheckbox("Init & Run",&running_,"runbutton()")
+//xpanel(480,34)
+
+xpanel("myRun", 0)
+xcheckbox("myRun",&running_,"update_rasterplot()") /* will call run */
+xpanel(380,34)
+
+//=========================================================================
+// Plot 10 interneurons
+//=========================================================================
+objref myINgraph
+strdef cellname
+myINgraph = new Graph(0)
+myINgraph.view(0, -80, tstop, 120, 372, 125, 305,200)
+myINgraph.size(0, tstop, -80, 40)
+myINgraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
+graphList[0].append( myINgraph )
+for i = 1, 9 {
+    sprint(cellname, "%s%d%s", "py.PV[", i, "].soma.v")
+    myINgraph.addexpr(cellname, 9, 1 , 0.8, 0.9, 2)
+}
+sprint(cellname, "%s", "py.PV[0].soma.v")
+myINgraph.addexpr(cellname, 3, 2 , 0.10, 1.60, 2)
+
+
+//=========================================================================
+// VoltageGraph
+//
+//=========================================================================
+begintemplate VoltageGraph 
+
+    public ncells
+
+    external tstop /* allow access to top level definitions */
+
+    objref mygraph
+    strdef cellname
+
+    proc init(){
+        ncells = 0
+        mygraph = new Graph(0)
+        mygraph.size(0, tstop, -80, 40) // (xmin, xmax, ymin, ymax) 
+        mygraph.view(0, -80, tstop, 120, 375, 295, 340, 200)
+        mygraph.label(0.4, 0.9, "VoltageGraph", 2, 1, 0, 0, 1)
+    }
+
+    proc add_Pycell(){
+        //sprint(cellname, "py.%s",$o1) 
+        //mygraph.addexpr(cellname, 3, 2, 0.11, 0.96, 2)    
+        ncells +=1
+        printf("Number of cells = %i", ncells)
+    }
+    
+endtemplate VoltageGraph 
+/*
+proc testPy(){localobj py, mygraph
+    strdef cellname
+
+    py = new PythonObject()
+    mygraph = new Graph(0)
+
+    mygraph.size(0, tstop, -80, 40)
+    mygraph.view(0, -80, tstop, 120, 375, 25, 700,200)
+    mygraph.label(0.4, 0.9, "IN spiking", 2, 1, 0, 0, 1)
+    graphList[0].append( mygraph )
+    sprint(cellname, "%s", "py.PV[0].soma.v")
+    mygraph.addexpr(cellname, 2, 2 , 0.11, 1.65, 2)
+    //py = $s1
+    printf("hello")
+}
+*/
+
